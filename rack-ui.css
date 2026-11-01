@@ -1,0 +1,284 @@
+/* DICEFRIEND / RACK UNIT 01
+   Industrial pixel-rack skin; original MIDI and audio functions retained. */
+:root {
+  color-scheme: light;
+  --paper:#1b1b23; --muted:#50515f; --acid:#7333ed; --line:#767681;
+  --metal:#a4a4aa; --plate:#b4b3b9; --plate-lite:#c6c5ca;
+  --shadow:#34333c; --violet:#6223ce; --violet-bright:#8e4cf0;
+  --lcd:#d5f039; --ink:#1e2230;
+}
+html{scroll-behavior:smooth}
+body{
+  color:var(--ink);font-family:ui-monospace,'SFMono-Regular',Consolas,'Liberation Mono',monospace;
+  background-color:#77777f;
+  background-image:linear-gradient(90deg,#0000000b 1px,transparent 1px),linear-gradient(#0000000b 1px,transparent 1px);
+  background-size:7px 7px;
+  font-size:13px;line-height:1.45;
+}
+*,*::before,*::after{box-sizing:border-box}
+main{max-width:1390px;padding:20px clamp(10px,2.5vw,38px) 40px;min-width:0}
+header{height:66px;max-width:1390px;background:#b3b3b9;border:2px solid #35353e;border-top:0;box-shadow:0 5px 0 #54535d;margin:0 auto;padding:0 24px}
+.wordmark{font-size:24px;font-weight:900;letter-spacing:-1.5px;text-transform:uppercase;color:#272530}
+.wordmark span{font-size:10px;letter-spacing:1px;color:#5626c3;margin-left:8px}
+.header-meta{font-size:11px;letter-spacing:2px;color:#5a5963;font-weight:700}
+#infoToggle{background:#5a5968;color:#f3f1fa;padding:10px 12px;border:2px solid #302d3a;border-radius:2px;font-weight:bold}
+button,select,input,summary{font-family:inherit}
+button{border-radius:2px!important;font-weight:800}
+button:focus-visible,select:focus-visible,input:focus-visible,summary:focus-visible{outline:3px solid #823bed!important;outline-offset:3px}
+button:disabled{opacity:.45;cursor:not-allowed}
+[hidden]{display:none!important}
+input,select{max-width:100%}
+select,input[type=number],input:not([type]){background:#e5e4e9;border:2px solid #666570;color:#252432;border-radius:2px;min-height:38px;padding:7px 10px}
+input[type=checkbox]{width:19px;height:19px;accent-color:var(--violet)}
+input[type=range]{accent-color:var(--violet);min-height:34px;cursor:pointer}
+summary{cursor:pointer;list-style:none;touch-action:manipulation;min-height:40px}
+summary::-webkit-details-marker{display:none}
+summary:after{content:'+';float:right;font-weight:900;color:var(--violet);font-size:18px;line-height:1}
+details[open]>summary:after{content:'−'}
+body .intro{display:none}
+
+/* ALWAYS AVAILABLE: status / transport / sound / capture. */
+.rack-deck,.studio-panel,.session-bar,.instrument,aside,.transport,.studio-random,
+.rack-clock-drawer,.rack-patch-drawer,.utilities,.keyboard-help{
+  position:relative;border:2px solid #46454e!important;border-radius:3px!important;
+  background:var(--metal)!important;box-shadow:inset 1px 1px #eeedf2,inset -2px -2px #71717d,3px 4px 0 #41404b55;
+  color:var(--ink);
+}
+.rack-deck:before,.studio-panel:before,.instrument:after{content:'';position:absolute;right:12px;top:10px;width:24px;height:8px;pointer-events:none;background:repeating-linear-gradient(90deg,#55545e 0 2px,transparent 2px 4px);opacity:.55}
+.rack-deck{padding:16px 18px 10px;margin:0 0 12px}
+.rack-deck-status{display:grid;grid-template-columns:minmax(170px,1fr) minmax(180px,.9fr) minmax(170px,.8fr);gap:14px;align-items:stretch}
+.rack-model{align-self:center;padding:3px 0}
+.rack-eyebrow{display:block;font-size:9px;font-weight:800;letter-spacing:2px;color:#56535e;margin-bottom:5px}
+.rack-model strong{display:block;font-size:clamp(23px,2.8vw,36px);letter-spacing:-1.4px;line-height:1.1;color:#24222c}
+.rack-model em{font-style:normal;color:var(--violet)}
+.lcd{position:relative;min-height:70px;border:4px solid #30303b;box-shadow:inset 2px 3px #0007,2px 2px #e8e7ed;background:#211456;color:#cdbbff;padding:6px 11px 7px;overflow:hidden}
+.lcd:after{content:'';position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,transparent 0 3px,#10062612 3px 4px)}
+.lcd span{display:block;letter-spacing:1.2px;font-size:9px;opacity:.8;font-weight:800}
+.lcd strong{font-family:ui-monospace,Consolas,monospace;display:block;font-size:clamp(17px,2.3vw,25px);font-weight:900;letter-spacing:-.5px;line-height:1.35}
+.lcd small{display:block;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;font-size:9px;font-weight:700}
+.lcd--green{background:#cbef31;color:#364319}
+.lcd--blue{background:#281d76;color:#d4ccff}
+.lcd--alert{background:#eeb6b9;color:#60202c}
+.rack-deck-actions{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;margin-top:13px}
+.rack-button{display:flex;gap:10px;align-items:center;justify-content:center;border:2px solid #3f3d49;background:#d2d0d7;color:#272431;min-height:51px;padding:10px;box-shadow:inset 1px 1px #f8f8fa,0 3px #4b4a58;font-size:17px}
+.rack-button span{font-size:12px;letter-spacing:1px}
+.rack-button:active{transform:translateY(2px);box-shadow:inset 1px 1px #8a8694,0 1px #4b4a58}
+.rack-button--power{background:#32274d;color:#f2e8ff}
+.rack-button--play.is-on{background:var(--lcd);color:#273018}
+.rack-button--power.is-on{background:#b9df45;color:#253514}
+.rack-button--dice{background:#9b8ac0;color:#281b48}
+.rack-button--rec.is-recording{background:#efb3b8;color:#620a21}
+.rack-deck-foot{display:flex;gap:12px;align-items:center;justify-content:space-between;border-top:1px solid #6c6a76;margin-top:14px;padding-top:8px;font-size:9px;font-weight:800;letter-spacing:.8px;color:#53515d}
+.rack-pilot{display:inline-block;width:7px;height:7px;border-radius:1px;background:var(--lcd);border:1px solid #38421f;vertical-align:middle;margin-right:4px}
+#rackSettings{border:0;background:transparent;color:#443177;font-size:10px;min-height:27px}
+
+/* Four workspaces, always reachable. */
+.studio-nav{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:8px!important;position:relative;z-index:12;background:transparent!important;border:0!important;box-shadow:none!important;padding:0!important;margin:0 0 12px!important}
+.studio-nav button{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:54px;padding:10px 15px!important;background:#b5b4bc!important;border:2px solid #4a4954!important;box-shadow:inset 1px 1px #e5e4eb,0 3px #4e4b58;color:#302f3a!important;white-space:nowrap}
+.studio-nav button[aria-selected=true]{background:#302451!important;color:#e5d9ff!important;border-color:#21163c!important;box-shadow:inset 1px 1px #8b69bc,0 3px #47335f}
+.nav-index{color:var(--violet);font-size:10px;opacity:.9}.studio-nav button[aria-selected=true] .nav-index{color:#bba8eb}
+.nav-name{font-size:13px;letter-spacing:1px;font-weight:900}
+
+/* Patch memory strip and its two-level disclosure. */
+.session-bar{padding:16px!important;margin:0 0 12px!important}
+.rack-panel-tag{font-size:10px;color:#4d4665;font-weight:900;letter-spacing:1.4px;margin-bottom:10px}
+.section-top{border-color:#686471!important;color:#4a4854!important;font-weight:800!important}
+.section-top-meta{color:#5c4d7d!important}
+.preset-toolbar{gap:8px!important}
+.preset-toolbar button,#presetTabs button,.sync-toolbar button,.file-actions button,.project-actions button{min-height:42px!important;background:#d0cdd6!important;color:#2b2933!important;border:2px solid #55515d!important;padding:8px 12px!important;box-shadow:inset 1px 1px #f2eff6}
+#presetTabs button[aria-selected=true],#presetTabs button.active{background:#6f35d8!important;color:#fff!important}
+.rack-patch-drawer{padding:9px 12px!important;margin-bottom:12px!important}
+.rack-patch-drawer summary,.rack-clock-drawer>summary{display:flex;justify-content:space-between;align-items:center;gap:10px;min-height:40px;font-size:12px;font-weight:900;letter-spacing:1.1px}
+.rack-patch-drawer summary:after,.rack-clock-drawer>summary:after{position:absolute;right:14px}
+.rack-patch-drawer summary small,.rack-clock-drawer>summary small{margin-right:24px;color:#5b5367;font-size:9px}
+.factory-bank{padding:10px 0 5px}.factory-bank label{font-size:11px}
+#presetPreview{color:#534f5b!important}
+.session-more,.instrument-details{border-top:1px solid #75717b!important;margin-top:10px;padding-top:9px}
+.session-more summary,.instrument-details summary{font-size:11px;font-weight:900;letter-spacing:1px}
+#syncHelp{color:#55515b;font-size:11px}
+.rack-clock-drawer{padding:10px 15px!important;margin-bottom:12px!important}
+.studio-transport{margin:5px 0 2px!important;padding:9px!important;background:#c1c0c7!important;border:1px solid #77727e!important;box-shadow:none!important}
+.studio-transport>.studio-row{gap:8px!important}
+.studio-transport .studio-row button{border:2px solid #56505d!important;background:#e0dde7!important;color:#27232f!important}
+#beatPosition{color:#4d258e!important}
+#transportState{color:#40305d!important}
+
+/* Main synth workstation. Keep pads above controls. */
+.workspace{grid-template-columns:minmax(0,1.4fr) minmax(275px,.7fr);gap:12px;align-items:start;margin:0}
+.instrument{padding:22px 24px 18px!important;min-height:0!important;background:var(--plate)!important;box-shadow:inset 2px 2px #f3f2f6,inset -2px -2px #76727d,3px 4px #40404b55!important;color:#24212d!important}
+.screw{background:linear-gradient(45deg,#64616e 42%,#32303b 44% 55%,#8f8c98 57%)!important;box-shadow:none!important;width:8px;height:8px}
+.device-head{display:flex;align-items:center;gap:9px;margin-bottom:15px;border-bottom:2px solid #88848e;padding-bottom:13px}
+.device-brand{font:900 22px ui-monospace,monospace;letter-spacing:-1px!important;color:#302d39}
+.device-brand span{font-size:9px!important;letter-spacing:1px;color:#60596b}
+#modeLabel{font-size:9px!important;color:#3e3760!important;font-weight:900}
+.device-led{background:#4b405e;border:1px solid #211e2a;box-shadow:inset 1px 1px #211a34}
+.device-led.on{background:#d7f638!important;box-shadow:0 0 0 2px #7251c2!important}
+.sound-picker{background:#9d9ca5;border:2px solid #676270;box-shadow:inset 2px 2px #d7d5dc;padding:12px;margin-bottom:13px}
+.os-label{font-size:10px!important;font-weight:900!important;letter-spacing:1px;color:#4d455c!important;margin-bottom:7px}
+#os{display:block;width:100%;font-size:16px!important;font-weight:900;background:#d0ec67!important;color:#29351d!important;border:3px solid #454451!important;min-height:50px;border-radius:0!important}
+#subtitle{font-size:10px!important;color:#45404b!important;line-height:1.5;margin:7px 0 0!important}
+.hardware-bottom{border:0!important;padding:0!important;margin:14px 0 4px;gap:12px!important;align-items:stretch}
+.pads{gap:9px!important;min-width:0;flex:1}
+.pad{height:100px!important;border:3px solid #3f3a4d!important;background:linear-gradient(135deg,#6840b8,#47218e)!important;color:#f8eaff!important;border-radius:2px!important;box-shadow:inset 2px 2px #ae7eef,inset -3px -3px #251947,0 4px #54505f!important;min-width:0;touch-action:none}
+.pad span{font-size:16px!important;font-weight:900}.pad small{font-size:10px!important;opacity:.85;margin-top:12px!important}
+.pad.active{background:linear-gradient(135deg,#dcf66a,#a9d92f)!important;color:#293416!important;box-shadow:inset 2px 2px #fbffc9,0 0 0 3px #6331b5!important}
+.switches{width:112px!important;grid-template-columns:54px 1fr!important;gap:5px!important;align-content:center}
+.switches>span{font-size:9px!important;font-weight:900;line-height:1.2}.switches small{font-size:9px!important}
+.dice{min-height:50px!important;height:50px!important;border:2px solid #493e60!important;background:#4d268a!important;color:#f4e2ff!important;box-shadow:inset 1px 1px #a57cef!important;font-size:26px!important}
+.switches #shift{border:2px solid #585267!important;background:#e1dfe7!important;color:#343042!important;box-shadow:inset 1px 1px #fff!important;font-size:10px!important;font-weight:900}
+.switches #shift.active{background:#d5ee4d!important;color:#313b18!important}
+.pad-help{font-size:10px!important;color:#544d5f!important;margin:7px 0 14px;line-height:1.5}
+.knobs{grid-template-columns:repeat(3,minmax(0,1fr));gap:14px!important;background:#9a99a2;border:2px solid #736e7a;box-shadow:inset 2px 2px #cecdd4;padding:16px 8px!important;margin:10px 0 0!important}
+.knob{width:73px!important;height:73px!important;border:5px solid #4d4b59!important;background:repeating-conic-gradient(#6f6b7e 0 2deg,#3b3947 3deg 6deg)!important;box-shadow:inset 0 2px #e7e2ef,0 3px #605e6a!important}
+.knob:before{background:radial-gradient(circle at 36% 20%,#9d9aa5,#454351 78%)!important}
+.knob i{background:#d8ef51!important}
+.knob-label{color:#3d3949!important;font-size:9px!important;font-weight:900;letter-spacing:.3px!important}
+.knob-value{color:#6126bf!important;font-size:11px!important;font-weight:900}
+.device-foot{margin-top:15px;font-size:9px!important;color:#5b5464!important}
+
+/* Detailed inspection and meter panel. */
+aside{padding:16px!important;margin:0!important;min-width:0!important}
+.instrument-details summary{font-size:12px;line-height:1.4}
+.panel-title{font-weight:900;color:#514967!important;font-size:10px!important;padding-top:10px}
+canvas{background:#22124b!important;border:3px solid #4b4759!important;border-radius:0!important}
+#scope{height:96px!important}
+.meter-caption{font-size:9px!important;color:#463a60!important}
+.mode-row button{background:#d6d3dc!important;color:#342e41!important;border:2px solid #6c6577!important;border-radius:2px!important;font-weight:900}
+.mode-row button.selected{background:#d8ee48!important;color:#26331b!important}
+.mode-row small{color:inherit!important;font-size:9px!important}
+.param-heading,.param,.seed-row{font-size:10px!important;color:#50475f!important}
+.param b{color:#371e73!important;font-weight:800!important}
+#pickup,.seed-row button{color:#6424c8!important;font-weight:900}
+#parameters{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 8px}
+
+/* Transport directly below synth, not buried by layout. */
+.transport{border:2px solid #55515d!important;padding:12px!important;margin:12px 0!important;box-shadow:inset 2px 2px #efedf5!important;gap:12px!important;flex-wrap:wrap;background:#acabb4!important}
+.transport #start{background:#332453!important;color:#e9deff!important;border:2px solid #241934!important;min-height:48px;min-width:150px;padding:11px 16px!important;font-size:12px!important;font-weight:900}
+.transport #record{background:#d8ccd9!important;border:2px solid #66616d!important;padding:12px!important;min-height:48px}
+.transport #record.recording{background:#edbdc4!important;color:#7b1532!important}
+.volume{color:#3a3446!important;font-size:10px!important;font-weight:900;flex:1;min-width:140px}
+.volume input{flex:1;min-width:80px;width:auto}
+#message{min-height:0!important;padding:9px 12px!important;margin:0 0 12px;color:#341f66!important;background:#c1bed0;border-left:4px solid var(--violet);font-weight:900}
+
+/* Shared production forms. */
+.studio-panel{padding:19px!important;min-width:0!important;box-shadow:inset 1px 1px #f1eff6,3px 4px #41404c55!important}
+.studio-panel h2{font-size:26px!important;font-weight:900;letter-spacing:-1px!important;color:#292735!important}
+.studio-title small{font-size:10px!important;font-weight:900;color:#63309c!important;letter-spacing:.5px}
+#sampleState,#transportState,#recordStatus,#midiStatus{color:#44227b!important;font-weight:900!important}
+.studio-panel button,.studio-random button,.studio-row button,.midi-track button,.project-actions button{min-height:44px!important;border:2px solid #615a6e!important;background:#d7d4de!important;color:#302837!important;box-shadow:inset 1px 1px #f4effc!important;font-size:11px!important;font-weight:900!important;padding:8px 12px!important}
+.studio-panel button:active,.studio-random button:active{background:#ae94e9!important}
+.studio-row label{font-size:11px!important;color:#39303f!important}
+.studio-row select,.studio-panel select{background:#e4e1eb!important;color:#30253f!important;min-height:42px;border:2px solid #686170}
+.studio-panel input[type=number],.studio-transport input[type=number]{background:#e4e1e9!important;color:#2e263c!important;border:2px solid #696071!important;min-height:41px}
+.studio-panel p,.studio-transport p{color:#4f4a5a!important;line-height:1.55!important}
+#dropZone{background:#c7badf!important;color:#3c226e!important;border:2px dashed #603b9b!important;min-height:82px;font-weight:900}
+#dropZone.dragging{background:#b8dd56!important}
+#waveform{height:150px!important;margin:12px 0 8px!important}
+.sample-controls,.master-controls{gap:12px!important;margin:15px 0!important}
+.sample-controls label,.master-controls label{background:#bdbbc4;border:1px solid #706b7c;padding:12px;color:#352c46!important;font-size:10px!important;font-weight:900}
+.sample-controls label>div{margin-top:6px!important}
+.sample-controls output,.master-controls output{color:#4d1d9d!important;font-weight:900}
+.master-controls{grid-template-columns:repeat(4,minmax(0,1fr))!important}
+.meters{padding:10px;background:#aaa7b4;border:2px solid #6a6375;gap:10px!important}
+.meters label{font-weight:900!important}
+meter{accent-color:var(--violet);height:24px}
+#clipIndicator.clipping{background:#922f56;color:#fff!important;padding:6px}
+.record-box,.offline-box{padding:14px;background:#b9b6c0;border:1px solid #767079;margin-top:13px!important}
+#recordTime{color:#5122a1!important}
+.advanced-controls,.compact-help,.keyboard-help,.utilities{color:#4a4655!important;font-size:11px!important}
+.advanced-controls>summary,.compact-help>summary,.keyboard-help>summary,.utilities>summary{font-size:12px;font-weight:900;letter-spacing:.4px;border-bottom:1px solid #6e6875;padding:10px 4px}
+.studio-random{padding:12px 15px!important;margin:10px 0!important}
+.studio-random summary{font-weight:900;color:#4c287b}
+.studio-random fieldset{border:1px solid #716b7b!important}
+#studioStatus{color:#4c218d!important;font-weight:900;font-size:11px!important}
+.project-actions{display:flex;flex-wrap:wrap}
+.midi-track,.midi-matrix td,.midi-matrix th{border-color:#5f596b!important;background:#b4b0bf!important;color:#2e2a35}
+#pianoRoll{background:#231551!important}
+#sampleMute[aria-pressed=true],#sampleSolo[aria-pressed=true]{background:#e0ef64!important;color:#293319!important}
+.analysis-grid output{color:#672bcb!important}
+.keyboard-help,.utilities{padding:9px 16px!important;margin:10px 0!important}
+footer{font-size:9px!important;color:#3b3549!important}
+
+@media (max-width:900px){
+  header{height:53px;padding:0 13px}main{padding:12px 10px 100px!important}
+  .header-meta{font-size:9px;letter-spacing:.5px}
+  #infoToggle{padding:8px;font-size:9px}
+  .rack-deck{padding:12px 10px 8px;margin-bottom:10px}
+  .rack-deck-status{grid-template-columns:1fr 1fr;gap:8px}
+  .rack-model{grid-column:1/-1;display:flex;gap:12px;align-items:center;justify-content:space-between;padding:0}
+  .rack-model strong{font-size:22px}.rack-eyebrow{font-size:8px;margin:0;letter-spacing:1px}
+  .lcd{min-height:67px;padding:5px 8px}.lcd strong{font-size:18px}.lcd span{font-size:8px}.lcd small{font-size:8px}
+  .rack-deck-actions{gap:6px;margin-top:9px}
+  .rack-button{min-height:54px;flex-direction:column;gap:1px;font-size:19px;padding:5px 2px}
+  .rack-button span{font-size:9px;letter-spacing:0}
+  .rack-deck-foot{margin-top:10px;font-size:8px}
+  .studio-nav{position:fixed!important;top:auto!important;bottom:0;left:0;right:0;z-index:100!important;background:#86838f!important;border-top:3px solid #3c354b!important;padding:7px 8px max(7px,env(safe-area-inset-bottom))!important;box-shadow:0 -5px 20px #0004!important;margin:0!important;gap:6px!important}
+  .studio-nav button{min-height:54px;padding:7px 5px!important;flex-direction:column;gap:2px}
+  .nav-name{font-size:11px}.nav-index{font-size:9px}
+  .workspace{display:block!important}
+  .instrument{padding:18px 12px 15px!important;min-height:0!important}
+  aside{margin-top:10px!important;padding:12px!important;max-width:none!important}
+  body.info-hidden aside{display:none!important}
+  .session-bar{padding:12px!important;margin-bottom:9px!important}
+  .session-bar .section-top{display:none}
+  .hardware-bottom{display:flex!important;flex-direction:column-reverse;gap:10px!important;margin:10px 0!important}
+  .switches{width:100%!important;display:flex!important;align-items:center;gap:10px!important}
+  .switches>span{flex:1}.switches small{flex:1}
+  .switches #shift{min-height:42px;min-width:72px}
+  .pads{width:100%;gap:7px!important}
+  .pad{height:88px!important;min-height:88px}
+  .knobs{padding:12px 4px!important;gap:10px 4px!important}
+  .knob{width:67px!important;height:67px!important}
+  .knob-label{font-size:8px!important}.knob-value{font-size:10px!important}
+  .device-brand{font-size:19px!important}.device-brand span{font-size:8px!important}
+  .device-head{padding-bottom:9px;margin-bottom:10px}
+  #os{font-size:14px!important}.sound-picker{padding:10px}
+  .transport{margin-top:10px!important;gap:8px!important;padding:10px!important}
+  .volume{order:3;flex-basis:100%}
+  .studio-panel{padding:12px!important}
+  .studio-title small{display:block;font-size:8px!important}
+  .studio-panel h2{font-size:22px!important}
+  .studio-panel .sample-controls,.studio-panel .advanced-controls .sample-controls{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important}
+  .master-controls{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important}
+  .studio-row{gap:8px!important}
+  .studio-row button{min-height:44px!important}
+  #waveform{height:108px!important}
+  #midiPanel,.studio-panel{overflow-wrap:anywhere}
+  #pianoRoll{height:140px}
+  .midi-matrix{max-width:calc(100vw - 48px)}
+  .midi-track{padding:9px}
+  .rack-patch-drawer summary small,.rack-clock-drawer summary small{display:none}
+  .rack-patch-drawer summary,.rack-clock-drawer summary{font-size:11px}
+  .keyboard-help{display:none!important}
+  footer{display:none!important}
+}
+@media(max-width:420px){
+  .header-meta{display:none}
+  .rack-model{display:block}.rack-eyebrow{margin-bottom:3px}
+  .rack-deck-foot #rackContext{display:none}
+  .studio-nav button{padding:7px 2px!important}
+  #presetTabs{overflow:auto;flex-wrap:nowrap!important}
+  #presetTabs button{white-space:nowrap}
+  .switches>span{font-size:8px!important}
+  .transport #start{min-width:0;flex:1}
+  .transport #record{min-width:82px}
+  .midi-fields{grid-template-columns:1fr 1fr!important}
+}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*::before,*::after{transition:none!important;animation:none!important}}
+
+/* PERFORMANCE-FIRST PLACEMENT */
+.rack-live-patches{display:flex;align-items:center;gap:10px;padding:9px 13px;border:2px solid #474451;background:#b4b1bc;box-shadow:inset 1px 1px #e8e6ed,0 3px #484451;margin:0 0 12px;min-width:0}
+.rack-live-label{font-size:10px;font-weight:900;letter-spacing:1px;color:#573395;flex:0 0 auto}
+.rack-live-patches #presetTabs{display:flex;gap:7px;flex:1;min-width:0;overflow-x:auto!important;scrollbar-width:thin;padding-bottom:2px}
+.rack-live-patches #presetTabs button{flex:none;min-height:37px!important;padding:7px 13px!important;border:2px solid #4e485d!important;background:#d4d1dc!important;color:#292635!important;font-size:11px!important;white-space:nowrap}
+.rack-live-patches #presetTabs button[aria-selected=true],.rack-live-patches #presetTabs button.active{background:#7333df!important;color:#fff!important}
+.rack-live-patches[hidden]{display:none!important}
+.rack-clock-drawer{margin-top:12px!important}
+@media (max-width:900px){
+ .rack-live-patches{padding:6px 8px;margin-bottom:9px}
+ .rack-live-patches #presetTabs button{min-height:38px!important;padding:7px 11px!important}
+ .rack-live-label{font-size:9px}
+}
+
+/* Keep the full project name visible even on narrow phones. */
+@media(max-width:900px){.wordmark span{display:inline!important;font-size:10px!important;margin-left:5px!important;letter-spacing:0!important}}
