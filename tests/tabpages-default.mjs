@@ -1,0 +1,33 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import project from '../src/default-atmoslam-project.json' with {type:'json'};
+import {validateProject} from '../src/audio/ProjectState.js';
+import {validExtensions} from '../src/generative/settings.js';
+import {validateMidiConfig} from '../src/midi/state.js';
+import {systems} from '../src/parameters.js';
+const validatePreset=p=>p?.version===1 && validExtensions(p) && Number.isInteger(p.os) && p.os>=0 && p.os<systems.length && Array.isArray(p.params) && p.params.length===12 && p.params.every(v=>Number.isFinite(v)&&v>=0&&v<=1) && Number.isInteger(p.seed) && p.seed>=0 && p.seed<=4294967295 && ['AS','TS'].includes(p.mode) && Number.isFinite(p.volume) && p.volume>=0 && p.volume<=1 && typeof p.fixed==='boolean';
+const validateSession=s=>s?.version===2 && s.presets.length>0 && s.presets.length<=12 && s.presets.every(p=>validatePreset(p) && validateMidiConfig(p.midi) && typeof p.instanceId==='string' && typeof p.name==='string' && typeof p.sync==='boolean') && Number.isFinite(s.tempo) && s.tempo>=1 && s.tempo<=6000;
+assert(validateProject(project,validateSession),'embedded default JSON must be a valid diceFriend project');
+assert.equal(project.synth.tempo,186);assert.equal(project.synth.presets.length,7);assert.equal(project.synth.activePreset,3);assert.equal(project.sample.params.muted,true);
+assert.equal(new Set(project.synth.presets.map(p=>p.instanceId)).size,7,'MIDI instance IDs must be unique');
+const html=fs.readFileSync(new URL('../index.html',import.meta.url),'utf8');
+const main=fs.readFileSync(new URL('../src/main.js',import.meta.url),'utf8');
+const studio=fs.readFileSync(new URL('../src/studio.js',import.meta.url),'utf8');
+const css=fs.readFileSync(new URL('../src/style.css',import.meta.url),'utf8');
+for(let i=0;i<3;i++){
+ assert(html.includes(`id="control-tab-${i}"`),`missing tab ${i}`);
+ assert(html.includes(`id="control-page-${i}"`),`missing panel ${i}`);
+ assert(html.includes(`data-page="${i}"`),`missing fader container ${i}`);
+}
+assert.equal((html.match(/role="tabpanel"/g)||[]).length,4,'3 parameter pages plus synth preset tab panel');
+assert(!html.includes('id="shift"'), 'old cycling layer button must be removed');
+assert(!html.includes('id="knobs"'), 'old knob container must be removed');
+assert(main.includes("slider.type='range'"),'faders must be real range inputs');
+assert(main.includes("slider.addEventListener('input'"),'faders must change live DSP parameters');
+assert(main.includes('setControlPage(next,true)'),'tab pages must support arrow-key navigation');
+assert(main.includes("localStorage.getItem('dicefriend-generative-synth')"),'old synth saves must take precedence');
+assert(studio.includes("localStorage.getItem('dicefriend-generative-project')"),'old project saves must take precedence');
+assert(studio.includes('restore(structuredClone(defaultProject))'),'fresh installs must load the user-supplied default project');
+assert(studio.includes('restoreDefaultProject'),'manual default restore must be present');
+assert(css.includes('.control-page[hidden]{display:none!important}'),'inactive tab pages must be hidden');
+console.log('PASS 3 real tab pages with live faders and validated default 7-layer user project at 186 BPM');

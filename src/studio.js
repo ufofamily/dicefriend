@@ -1,4 +1,5 @@
 import {hierarchy} from './presetHierarchy.js';
+import defaultProject from './default-atmoslam-project.json';
 import {replacementCandidates,chooseReplacement} from './categoryDice.js';
 import {ExtensionControl} from './generative/ExtensionControl.js';
 import {MidiStudio} from './midi/MidiStudio.js';
@@ -153,12 +154,17 @@ export function setupStudio(synth){
  const extensionControl=new ExtensionControl(synth,sample,midiControl,save,report);$('#padHelp').after(extensionControl.element);
  const shortcuts=document.querySelector('.keyboard-help');shortcuts.open=false;
  const projectMenu=document.createElement('details');projectMenu.className='project-menu';projectMenu.innerHTML='<summary>Проект</summary>';projectActions.before(projectMenu);projectMenu.append(projectActions);
+ const resetDefault=document.createElement('button');resetDefault.id='restoreDefaultProject';resetDefault.type='button';resetDefault.textContent='↺ Вернуть исходный сет ATMOSLAM';resetDefault.title='Восстановить 7 вкладок из приложенного проекта';resetDefault.onclick=safe(async()=>{if(!confirm('Заменить текущий проект исходным сетом ATMOSLAM? Сначала экспортируйте изменения, если хотите их сохранить.'))return;await restore(structuredClone(defaultProject));});projectMenu.append(resetDefault);
  const advancedSynth=document.createElement('details');advancedSynth.className='synth-details';advancedSynth.innerHTML='<summary>Движок, MIDI и параметры</summary>';$('#presetPanel').append(advancedSynth);advancedSynth.append($('#info'),midiControl.compact);
  const synthTransport=$('.transport');$('#presetPanel').prepend(synthTransport);
  const physicalMidi=document.querySelector('.utilities');midiControl.panel.append(physicalMidi);
  $('#start').title='Пуск выбранной вкладки';$('#transportStart').title='Пуск всех вкладок, сэмпла и MIDI';
  syncUI();recordUI();draw();show('synth');
- let restored;try{restored=JSON.parse(localStorage.getItem('dicefriend-generative-project'))}catch{}if(restored)restore(restored).catch(e=>report(e.message));
+ let restored,hasSynthStorage=false;
+ try{restored=JSON.parse(localStorage.getItem('dicefriend-generative-project'))}catch{}
+ try{hasSynthStorage=!!localStorage.getItem('dicefriend-generative-synth')}catch{}
+ if(restored)restore(restored).catch(e=>report(e.message));
+ else if(!hasSynthStorage)restore(structuredClone(defaultProject)).catch(e=>report('Исходный проект не загружен: '+e.message));
  $('#offlineExport').onclick=safe(async()=>{const duration=Number($('#offlineDuration').value);if(!Number.isFinite(duration)||duration<1||duration>30)throw Error('Длительность: 1–30 секунд');$('#offlineExport').disabled=true;try{extensionControl.prepare();report('Offline render…');const {offlineExport}=await import('./audio/offline.js');const blob=await offlineExport(project(),sample.buffer,duration,Number($('#wavRate').value),Number($('#wavBits').value),midiControl.file);download(blob,'dicefriend-offline.wav');report('Offline WAV готов')}finally{$('#offlineExport').disabled=false}});
  return {sample,recorder,midiControl,extensionControl,project,restore,syncPresetSelector,midi(action){if(action==='stop')midiControl.sequencer?.pause();else if(midiControl.file&&midiControl.settings.follow)midiControl.play().catch(e=>report(e.message));if(sample.params.mode!=='INDEPENDENT'){if(action==='stop')sample.pause();else if(sample.buffer)sample.play(transport.nextTime()).catch(e=>report(e.message))}},get view(){return view},save,dice:diceRoll,modulate:value=>sample.node?.port.postMessage({type:'chaos',value}),panic:stop,toggleTransport:safe(()=>transport.state.running?stop():start()),toggleRecord:safe(()=>recorder.status==='recording'?recorder.stop():record())};
 }

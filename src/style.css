@@ -496,3 +496,33 @@ footer{color:#71807a!important}
   .studio-nav{border-radius:12px}
   .instrument,.studio-panel,.studio-transport{border-radius:16px!important}
 }
+
+
+/* ATMOSLAM compact Win-style tab pages with accessible horizontal faders. */
+.control-workspace{position:relative;z-index:1;margin:14px 0 12px;min-width:0}
+.control-tabbar{display:flex;align-items:stretch;gap:3px;padding:0 5px;overflow-x:auto;scrollbar-width:thin}
+.control-tabbar button[role=tab]{position:relative;flex:1 0 auto;min-width:0;padding:11px 9px!important;border-radius:9px 9px 0 0!important;border:1px solid #475952!important;background:linear-gradient(180deg,#1e2a2b,#111819)!important;color:#acbfb5!important;font:700 11px/1.1 'Space Mono',monospace!important;letter-spacing:.7px;box-shadow:none!important;min-height:42px}
+.control-tabbar button[role=tab][aria-selected=true]{background:linear-gradient(180deg,#2b3836,#192524)!important;color:#caff87!important;border-color:#73987b!important;border-bottom-color:#192524!important;z-index:2}
+.control-tabbar button[role=tab]:focus-visible{outline:2px solid var(--acid)!important;outline-offset:-4px}
+.control-pages{margin-top:-1px;border:1px solid #62806e;border-radius:12px;background:linear-gradient(175deg,rgba(19,31,29,.97),rgba(11,18,19,.97));padding:14px 14px 10px;box-shadow:inset 0 1px rgba(255,255,255,.03),0 10px 24px #0004}
+.control-page[hidden]{display:none!important}
+.control-faders{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 18px}
+.control-fader{min-width:0;padding:5px 8px 6px;border:1px solid rgba(96,130,111,.21);border-radius:8px;background:rgba(0,0,0,.13)}
+.control-fader-label{display:block;min-height:16px;margin:0 0 4px;color:#dcece0!important;font:600 10px/1.2 'Space Mono',monospace;overflow-wrap:anywhere}
+.fader-readout{display:flex;align-items:center;gap:11px;min-width:0}
+.fader-readout input[type=range]{appearance:none;-webkit-appearance:none;flex:1;min-width:24px;width:100%;height:20px;min-height:20px;margin:0;background:transparent!important;border:0!important;cursor:ew-resize;touch-action:auto;padding:0;box-shadow:none;outline-offset:3px}
+.fader-readout input[type=range]::-webkit-slider-runnable-track{height:5px;border-radius:5px;background:linear-gradient(90deg,#bdff79 0 var(--fader-fill,50%),#354643 var(--fader-fill,50%) 100%);border:1px solid #44584e}
+.fader-readout input[type=range]::-moz-range-track{height:5px;border-radius:5px;background:#354643;border:1px solid #44584e}
+.fader-readout input[type=range]::-moz-range-progress{height:5px;border-radius:5px;background:#bdff79}
+.fader-readout input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:11px;height:19px;margin-top:-8px;border-radius:3px;border:1px solid #dfffbd;background:linear-gradient(180deg,#e3ffb2,#8cbd72);box-shadow:0 2px 3px #0007}
+.fader-readout input[type=range]::-moz-range-thumb{width:11px;height:19px;border-radius:3px;border:1px solid #dfffbd;background:linear-gradient(180deg,#e3ffb2,#8cbd72)}
+.fader-readout output{font:700 11px/1.15 'Space Mono',monospace;min-width:73px;text-align:right;color:#bcff90;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.control-fader.fader-inactive{opacity:.62}
+.control-fader.fader-inactive .control-fader-label::after{content:' *';color:#ff947d}
+.control-workspace .knob-page-help{min-height:0;margin:6px 6px 0!important;text-align:left;color:#a2b1aa!important;font:9px/1.4 'Space Mono',monospace}
+.instrument .hardware-bottom{margin-top:10px;padding-top:13px!important}
+.instrument .switches{width:124px;grid-template-columns:52px 1fr;gap:8px!important}
+.control-switch-hint{grid-column:1/-1;color:#a3bcb0!important;font:8px/1.4 'Space Mono',monospace}
+#restoreDefaultProject{display:block;width:100%;margin-top:8px;padding:10px!important;text-align:center}
+@media(max-width:700px){.control-pages{padding:10px}.control-faders{gap:6px 8px}.control-fader{padding:6px 7px}.fader-readout{gap:6px}.fader-readout output{font-size:10px;min-width:56px}.control-tabbar button[role=tab]{font-size:10px!important;padding:9px 5px!important}}
+@media(max-width:420px){.control-faders{grid-template-columns:1fr}.fader-readout output{min-width:80px}.control-fader-label{font-size:11px}.control-workspace{margin-top:8px}}

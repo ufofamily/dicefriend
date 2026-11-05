@@ -8,6 +8,7 @@ const html = await readFile(path.join(dist, 'index.html'), 'utf8');
 const assets = await readdir(path.join(dist, 'assets'));
 
 assert(html.includes('<html'), 'compiled index.html is missing');
+for (let i=0;i<3;i++) assert(html.includes(`id="control-tab-${i}"`), `missing built control tab ${i}`);
 assert(html.includes('__ATMOSLAM_READY__'), 'startup diagnostics missing from HTML');
 assert(!html.includes('"/src/main.js"'), 'unbundled entrypoint remains in HTML');
 assert(!html.includes('"/src/style.css"'), 'unbundled stylesheet remains in HTML');

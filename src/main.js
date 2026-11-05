@@ -6,6 +6,7 @@ import {transport} from './audio/Transport.js';
 import {setupStudio} from './studio.js';
 let studio;
 import {systems,defaults,format,midiDefaults} from './parameters.js';
+import defaultProject from './default-atmoslam-project.json';
 import {controlPagesForPreset,readControl,formatControl,controlInactive,writeControl} from './presetControls.js';
 import {buildReplacementState} from './presetReplacement.js';
 import {Engine,muteSynths} from './engine.js';
@@ -14,7 +15,7 @@ const freshSeed=()=>crypto.getRandomValues(new Uint32Array(1))[0];
 let state={version:1,os:0,params:defaults(0),seed:freshSeed(),mode:'AS',volume:.55,fixed:false};
 function validate(s){return s&&validExtensions(s)&&s.version===1&&Number.isInteger(s.os)&&s.os>=0&&s.os<systems.length&&Array.isArray(s.params)&&s.params.length===12&&s.params.every(v=>Number.isFinite(v)&&v>=0&&v<=1)&&Number.isInteger(s.seed)&&s.seed>=0&&s.seed<=4294967295&&['AS','TS'].includes(s.mode)&&Number.isFinite(s.volume)&&s.volume>=0&&s.volume<=1&&typeof s.fixed==='boolean'}
 try{const s=JSON.parse(localStorage.getItem('dicefriend-generative-synth'));if(validate(s))state=s;if(!state.fixed)state.seed=freshSeed()}catch{}
-let engine=null,running=false,busy=false,layerIndex=0,keyShift=false,recorder=null,chunks=[],pickup=new Map(),midiAccess=null,midiInput=null,midiOutput=null,clockTimer=null,clockLast=0,clockTimes=[],saveTimer;
+let engine=null,running=false,busy=false,layerIndex=0,recorder=null,chunks=[],pickup=new Map(),midiAccess=null,midiInput=null,midiOutput=null,clockTimer=null,clockLast=0,clockTimes=[],saveTimer;
 
 let presets=[],activePreset=0,tempo=120,origin=0,lastPresetInstance=null;
 function validateSession(s){return s?.version===2&&Array.isArray(s.presets)&&s.presets.length>0&&s.presets.length<=12&&s.presets.every(p=>validate(p)&&validExtensions(p)&&(p.midi===undefined||validateMidiConfig(p.midi))&&(p.instanceId===undefined||typeof p.instanceId==='string'&&p.instanceId.length<=100)&&typeof p.name==='string'&&p.name.length<=40&&typeof p.sync==='boolean')&&Number.isFinite(s.tempo)&&s.tempo>=1&&s.tempo<=6000}
@@ -27,7 +28,13 @@ function loadSession(s){const states=validateSession(s)?s.presets:[s];tempo=vali
   const match=synthPresets.findIndex(p=>p[0]===current.name);
   if(match>=0)current.presetId=match;else delete current.presetId;
  }activePreset=Number.isInteger(s.activePreset)?Math.max(0,Math.min(presets.length-1,s.activePreset)):0;state=presets[activePreset].state;engine=null;running=false}
-function loadStoredSession(){let s;try{s=JSON.parse(localStorage.getItem('dicefriend-generative-synth'))}catch{}loadSession(validateSession(s)?s:state)}
+function loadStoredSession(){
+ let saved;try{saved=JSON.parse(localStorage.getItem('dicefriend-generative-synth'))}catch{}
+ // New installations start from the uploaded seven-layer ATMOSLAM project.
+ // Existing user sessions take precedence and are never overwritten here.
+ const initial=validateSession(saved)?saved:validateSession(defaultProject.synth)?defaultProject.synth:state;
+ loadSession(initial);
+}
 function syncEngine(e,s){e?.sync(s.sync?{bpm:tempo,origin}:null)}
 function setTempo(value){if(!Number.isFinite(value)||transport.state.source==='SAMPLE')return;transport.setBpm(value);tempo=transport.state.bpm;$('#tempo').value=tempo;save()}
 function alignClock(){transport.reset()}
@@ -60,8 +67,7 @@ $('#playAll').onclick=async()=>{if(busy)return;busy=true;capturePreset();try{for
  const startAt=transport.nextTime();for(const p of presets){syncEngine(p.engine,p.state);await p.engine.start(startAt);p.running=true}running=true;render();return startAt;
  }catch(e){message('Audio error: '+e.message)}finally{busy=false}};
 const currentLayout=()=>controlPagesForPreset(synthPresets[state.presetId]||null,state.os);
-const pageIndex=()=> (layerIndex+(keyShift?1:0))%3;
-const shifted=()=>pageIndex()!==0;
+const pageIndex=()=>layerIndex;
 const controlAt=j=>currentLayout().pages[pageIndex()].controls[j];
 const message=t=>$('#message').textContent=t;
 const save=()=>{clearTimeout(saveTimer);saveTimer=setTimeout(()=>{try{localStorage.setItem('dicefriend-generative-synth',JSON.stringify(sessionData()));studio?.save()}catch{message('Session storage is unavailable; export JSON to save.')}},200)};
@@ -82,22 +88,31 @@ function render(){
  $('#seed').textContent=state.seed.toString(16).toUpperCase().padStart(8,'0');$('#fixed').checked=state.fixed;
  $('#modeLabel').textContent=state.mode==='AS'?'AS · Авто':'TS · Касания';
  $('#as').classList.toggle('selected',state.mode==='AS');$('#ts').classList.toggle('selected',state.mode==='TS');
- $('#shift').classList.toggle('active',pageIndex()!==0);
- $('#shift').setAttribute('aria-pressed',String(pageIndex()!==0));
- $('#shift').setAttribute('aria-label','Страница ручек '+(pageIndex()+1)+' из 3: '+page.name+'. Переключить страницу');
- $('#layer').textContent=page.name+' · '+(pageIndex()+1)+'/3';
+ $$('.control-tabbar [role="tab"]').forEach((tab,i)=>{
+  const selected=i===pageIndex();
+  tab.setAttribute('aria-selected',String(selected));
+  tab.tabIndex=selected?0:-1;
+  $('#control-page-'+i).hidden=!selected;
+ });
  $('#knobPageHelp').textContent=page.description;
  $('#volume').value=state.volume;$('#volumeValue').textContent=Math.round(state.volume*100)+'%';
  $('#pickup').textContent=pickup.size?'PICKUP ARMED':'LIVE';
- $$('.knob-cell').forEach((cell,j)=>{
-  const control=page.controls[j],v=readControl(state,control),knob=cell.querySelector('.knob');
-  knob.style.setProperty('--angle',(v*270-135)+'deg');
-  knob.setAttribute('aria-label',control.name);
-  knob.setAttribute('aria-valuenow',Math.round(v*100));knob.setAttribute('aria-valuetext',formatControl(state,control));
-  knob.title=control.help+(controlInactive(state,control)?' · будет активен при включении источника/фильтра':'');
-  cell.classList.toggle('knob-inactive',controlInactive(state,control));
-  cell.querySelector('.knob-label').textContent=control.name;
-  cell.querySelector('.knob-value').textContent=formatControl(state,control);
+ $$('.control-faders').forEach((panel,i)=>{
+  const controls=layout.pages[i].controls;
+  [...panel.children].forEach((cell,j)=>{
+   const control=controls[j];
+   const slider=cell.querySelector('input[type="range"]');
+   const value=readControl(state,control);
+   // Avoid interrupting a drag by reassigning its active input every frame.
+   if(document.activeElement!==slider || !slider.matches(':active'))slider.value=value;
+   slider.setAttribute('aria-label',control.name);
+   slider.setAttribute('aria-valuetext',formatControl(state,control));
+   slider.title=control.help+(controlInactive(state,control)?' · включите источник/фильтр':'');
+   cell.classList.toggle('fader-inactive',controlInactive(state,control));
+   cell.querySelector('.control-fader-label').textContent=control.name;
+   cell.querySelector('output').textContent=formatControl(state,control);
+   cell.querySelector('.fader-readout').style.setProperty('--fader-fill',(value*100).toFixed(1)+'%');
+  });
  });
  $('#parameters').replaceChildren(...sys.params.map((p,i)=>{
   const el=document.createElement('div');el.className='param';const name=document.createElement('span');
@@ -106,36 +121,56 @@ function render(){
  }));
 }
 $('#os').innerHTML=systems.map((s,i)=>'<option value="'+i+'">'+String(i+1).padStart(2,'0')+' — '+s.name+'</option>').join('');
-for(let j=0;j<6;j++){
- const cell=document.createElement('div');cell.className='knob-cell';
- cell.innerHTML='<button class="knob" role="slider" aria-valuemin="0" aria-valuemax="100"><i></i></button><span class="knob-label"></span><span class="knob-value"></span>';
- $('#knobs').append(cell);const knob=cell.querySelector('button');let drag=null;
- knob.onpointerdown=e=>{
-  e.preventDefault();knob.setPointerCapture(e.pointerId);
-  const control=controlAt(j);drag={id:e.pointerId,y:e.clientY,v:readControl(state,control),control};
-  pickup.delete('knob'+control.id);
- };
- knob.onpointermove=e=>{if(drag&&e.pointerId===drag.id)sendControl(drag.control,drag.v+(drag.y-e.clientY)/220)};
- knob.onpointerup=knob.onpointercancel=knob.onlostpointercapture=()=>drag=null;
- knob.addEventListener('wheel',e=>{e.preventDefault();const control=controlAt(j);sendControl(control,readControl(state,control)-Math.sign(e.deltaY)*.015)},{passive:false});
- knob.onkeydown=e=>{
-  const control=controlAt(j);
-  if(['ArrowUp','ArrowRight','ArrowDown','ArrowLeft','Home','End'].includes(e.key)){
-   e.preventDefault();sendControl(control,e.key==='Home'?0:e.key==='End'?1:readControl(state,control)+(['ArrowUp','ArrowRight'].includes(e.key)?.01:-.01));
-  }
- };
+// Real Windows-style tab pages: every page owns six persistent range inputs.
+for(let page=0;page<3;page++){
+ const panel=document.querySelector('.control-faders[data-page="'+page+'"]');
+ for(let j=0;j<6;j++){
+  const cell=document.createElement('div');cell.className='control-fader';
+  const label=document.createElement('label');label.className='control-fader-label';
+  const slider=document.createElement('input');slider.type='range';slider.min='0';slider.max='1';slider.step='0.001';
+  slider.id='fader-'+page+'-'+j;
+  label.htmlFor=slider.id;
+  const value=document.createElement('output');value.htmlFor=slider.id;
+  const readout=document.createElement('div');readout.className='fader-readout';readout.append(slider,value);
+  cell.append(label,readout);panel.append(cell);
+  slider.addEventListener('input',()=>{
+   const control=currentLayout().pages[page].controls[j];
+   pickup.delete(control.id);
+   sendControl(control,Number(slider.value));
+  });
+  slider.addEventListener('dblclick',()=>{
+   const control=currentLayout().pages[page].controls[j];
+   sendControl(control,.5);
+  });
+  slider.addEventListener('wheel',e=>{
+   e.preventDefault();
+   const control=currentLayout().pages[page].controls[j];
+   sendControl(control,readControl(state,control)-Math.sign(e.deltaY)*.01);
+  },{passive:false});
+ }
 }
-$('#shift').onclick=()=>{layerIndex=(layerIndex+1)%3;render()};
-window.addEventListener('keydown',e=>{if(e.key==='Shift'&&!keyShift){keyShift=true;render()}});
-window.addEventListener('keyup',e=>{if(e.key==='Shift'){keyShift=false;render()}});
+function setControlPage(i,focus=false){
+ layerIndex=i;
+ render();
+ if(focus)$('#control-tab-'+i).focus();
+}
+$$('.control-tabbar [role="tab"]').forEach((tab,i)=>{
+ tab.onclick=()=>setControlPage(i);
+ tab.onkeydown=e=>{
+  const keys=['ArrowLeft','ArrowRight','Home','End'];if(!keys.includes(e.key))return;
+  e.preventDefault();
+  const next=e.key==='Home'?0:e.key==='End'?2:(i+(e.key==='ArrowLeft'?2:1))%3;
+  setControlPage(next,true);
+ };
+});
 const padPointers=new Map([0,1,2].map(i=>[i,new Map()]));
 for(const pad of $$('.pad')){const i=Number(pad.dataset.pad),active=padPointers.get(i);const update=()=>syncPad(i);pad.onpointerdown=e=>{e.preventDefault();pad.setPointerCapture(e.pointerId);active.set(e.pointerId,e.pointerType==='mouse'?.7:e.pressure||.7);update()};pad.onpointermove=e=>{if(active.has(e.pointerId)){active.set(e.pointerId,e.pointerType==='mouse'?.7:e.pressure||.7);engine?.touch(i,active.get(e.pointerId),true)}};pad.onpointerup=pad.onpointercancel=pad.onlostpointercapture=e=>{active.delete(e.pointerId);update()};pad.onkeydown=e=>{if((e.key===' '||e.key==='Enter')&&!e.repeat){e.preventDefault();active.set(-1,.7);update()}};pad.onkeyup=e=>{if(e.key===' '||e.key==='Enter'){active.delete(-1);update()}}}
 function randomizeSynth(allowed=Array.from({length:12},(_,i)=>i)){if(!state.fixed)state.seed=freshSeed();let x=state.seed||1;state.params=state.params.map((value,i)=>{if(!allowed.includes(i))return value;x^=x<<13;x^=x>>>17;x^=x<<5;return (x>>>0)/4294967296});engine?.randomize(state.seed);state.params.forEach((v,i)=>engine?.setParameter(i,v));pickup.clear();for(let i=0;i<12;i++)pickup.set(i,null);render();save();message('DICE · '+state.seed)}
-let diceDown=0,diceTimer,wasLong=false,diceShift=false;
-function diceStart(){diceDown=performance.now();wasLong=false;diceShift=shifted();$('#dice').classList.add('holding');diceTimer=setTimeout(()=>{wasLong=true;if(!diceShift&&!shifted()){setMode(state.mode==='AS'?'TS':'AS');message('Mode changed to '+state.mode)}},3000)}
+let diceDown=0,diceTimer,wasLong=false;
+function diceStart(){diceDown=performance.now();wasLong=false;$('#dice').classList.add('holding');diceTimer=setTimeout(()=>{wasLong=true;setMode(state.mode==='AS'?'TS':'AS');message('Mode changed to '+state.mode)},3000)}
 function diceEnd(cancel=false){clearTimeout(diceTimer);$('#dice').classList.remove('holding');if(diceDown&&!cancel&&!wasLong&&performance.now()-diceDown<3000)studio?.dice();diceDown=0}
 $('#dice').onpointerdown=e=>{e.preventDefault();$('#dice').setPointerCapture(e.pointerId);diceStart()};$('#dice').onpointerup=()=>diceEnd();$('#dice').onpointercancel=()=>diceEnd(true);$('#dice').onkeydown=e=>{if([' ','Enter'].includes(e.key)&&!e.repeat){e.preventDefault();diceStart()}};$('#dice').onkeyup=e=>{if([' ','Enter'].includes(e.key))diceEnd()};
-window.addEventListener('blur',()=>{release();keysDown.clear();keyShift=false;diceEnd(true);render()});document.addEventListener('visibilitychange',()=>{if(document.hidden){release();keysDown.clear();keyShift=false;diceEnd(true);render()}});
+window.addEventListener('blur',()=>{release();keysDown.clear();diceEnd(true);render()});document.addEventListener('visibilitychange',()=>{if(document.hidden){release();keysDown.clear();diceEnd(true);render()}});
 $('#as').onclick=()=>setMode('AS');$('#ts').onclick=()=>setMode('TS');
 async function makeEngine(){const next=new Engine(state.os);try{await next.init();engine=next;apply();if(running)await engine.start();else await engine.stop()}catch(e){await next.dispose().catch(()=>{});engine=null;throw e}}
 $('#start').onclick=async()=>{if(busy)return;busy=true;try{if(!engine)await makeEngine();if(running){release();await engine.stop();running=false}else{if(state.sync&&!transport.state.running)transport.start();await engine.start();running=true}$('#start').textContent=running?'■ STOP AUDIO':'▶ START AUDIO';$('#led').classList.toggle('on',running);capturePreset();render();message(running?'Audio running · '+systems[state.os].name+' / '+state.mode:'Audio stopped.')}catch(e){message('Audio could not start: '+e.message)}finally{busy=false}};
@@ -167,7 +202,7 @@ async function replaceCurrentPreset(index){
   }
   previous.state=nextState;previous.engine=replacementEngine;previous.running=wasRunning;
   state=nextState;engine=replacementEngine;running=wasRunning;
-  layerIndex=0;keyShift=false;pickup.clear();
+  layerIndex=0;pickup.clear();
   await oldEngine?.dispose().catch(()=>{});
   render();studio?.syncPresetSelector();studio?.midiControl.changed();save();
   message('Заменён пресет этой вкладки: '+name);
