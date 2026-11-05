@@ -229,6 +229,9 @@ studio=setupStudio({
  get busy(){return busy}
 });
 transport.subscribe(s=>{tempo=s.bpm;$('#tempo').value=Number(tempo.toFixed(2))});
+// GitHub Pages bootstrap health check: only report ready after all UI controllers loaded.
+window.__ATMOSLAM_READY__ = true;
+document.getElementById('atmoslam-boot-error')?.remove();
 
 export {studio};
 export {audioEngine,transport};

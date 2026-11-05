@@ -26,7 +26,7 @@
     "test:forensics": "node tests/forensics-presets.mjs",
     "test:dice": "node tests/category-dice.mjs",
     "test:knobs": "node tests/preset-controls.mjs",
-    "test:pages": "node tests/category-dice.mjs && node tests/preset-controls.mjs && node tests/forensics-presets.mjs && node tests/master-scenes.mjs && node tests/studio.mjs"
+    "test:pages": "node tests/pages-boot.mjs && node tests/category-dice.mjs && node tests/preset-controls.mjs && node tests/forensics-presets.mjs && node tests/master-scenes.mjs && node tests/studio.mjs"
   },
   "devDependencies": {
     "vite": "^6.4.1"

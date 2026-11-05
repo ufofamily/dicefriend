@@ -1,3 +1,5 @@
+> **GitHub Pages:** если пресеты не видны и звук не работает, откройте [GITHUB_PAGES_FIX.md](GITHUB_PAGES_FIX.md). Для публикации нужен именно GitHub Actions build, не публикация исходного `index.html` из ветки.
+
 ## GitHub Pages
 
 Готовая публикация без Node.js у посетителя: см. [GITHUB_PAGES.md](GITHUB_PAGES.md). После загрузки файлов в `main` GitHub Actions автоматически соберёт и опубликует сайт.
