@@ -2,7 +2,7 @@
   "version": 4,
   "synth": {
     "version": 2,
-    "tempo": 186,
+    "tempo": 220,
     "presets": [
       {
         "version": 1,
@@ -11,17 +11,17 @@
         "os": 20,
         "params": [
           0.25,
-          0.330733474963794,
-          0.42376008805247106,
+          0.956,
+          0,
           0.6376811594202899,
           0.7,
-          0.22,
+          0.532,
           0.5455263544885197,
-          0.25,
-          0.16,
+          0.718,
+          0.736,
           0.510909090909091,
-          0.030769230769230767,
-          0.09999999999999999
+          0.786,
+          0.288
         ],
         "seed": 830181,
         "mode": "AS",
@@ -69,7 +69,7 @@
         },
         "frequencyFilter": {
           "type": "LP",
-          "cutoff": 1862.4756967288927,
+          "cutoff": 438.56098707008977,
           "q": 0.707,
           "mix": 1
         },
@@ -89,7 +89,7 @@
         "os": 21,
         "params": [
           0.25,
-          0.34573427735364104,
+          0.976,
           0.33962051117312025,
           0.15942028985507245,
           0.55,
@@ -167,7 +167,7 @@
         "os": 19,
         "params": [
           0.25,
-          0.5365030254171123,
+          1,
           0.9228816757329307,
           0.5217391304347826,
           0.82,
@@ -241,34 +241,33 @@
       {
         "version": 1,
         "masterScene": "slambient-ritual",
-        "name": "Slambient / Ritual Air",
+        "name": "Slambient / Metal Shrine",
         "os": 19,
         "params": [
-          0.25,
-          0.5365030254171123,
-          0.9228816757329307,
-          0.5217391304347826,
-          0.82,
-          0.48,
-          0.28387831319289425,
-          0.28,
-          0.039999999999999994,
-          0.98,
-          0.3692307692307692,
-          0.8125
+          0.35,
+          1,
+          0.124,
+          0.7391304347826088,
+          0.7,
+          0.2,
+          1,
+          1,
+          0.12000000000000002,
+          0.88,
+          0.5384615384615384,
+          0.6875
         ],
-        "seed": 829172,
+        "seed": 837091,
         "mode": "AS",
         "fixed": true,
-        "volume": 0.57,
+        "volume": 1,
         "sync": true,
         "instanceId": "57a7ce8a-a2be-4412-b733-bfd206266dbe",
-        "presetId": 12,
         "midi": {
-          "enabled": false,
+          "enabled": true,
           "assignment": "AUTO",
           "source": "FILE",
-          "mode": "MODULATION",
+          "mode": "NOTE",
           "intensity": 0.8,
           "transpose": 0,
           "octave": 0,
@@ -314,20 +313,21 @@
           "density": 20,
           "variation": 1,
           "character": "TEXTURE"
-        }
+        },
+        "presetId": 13
       },
       {
         "version": 1,
         "os": 21,
         "params": [
           0.35,
-          0.4668879649565377,
-          0.31052653591005186,
-          0.4492753623188406,
+          0.931,
+          1,
+          0.904,
           0.8,
-          0.6,
+          1,
           0.6541201032390639,
-          0.85,
+          0.617,
           0.22000000000000003,
           0.2,
           0.030769230769230767,
@@ -341,7 +341,7 @@
         "sync": true,
         "frequencyFilter": {
           "type": "LP",
-          "cutoff": 348.9938295477215,
+          "cutoff": 17540.016422872694,
           "q": 0.707,
           "mix": 1
         },
@@ -398,17 +398,17 @@
         "os": 21,
         "params": [
           0.425,
-          0.3887284099678409,
-          0.2757689215276699,
-          0.30434782608695654,
-          0.7,
-          0.4,
-          0.5347383231409019,
+          0.439,
+          0.947,
           1,
-          0.16,
-          0.16,
-          0,
-          0.024999999999999998
+          0.7,
+          1,
+          1,
+          0.35,
+          0.673,
+          0.68,
+          0.763,
+          0.67
         ],
         "seed": 839109,
         "mode": "AS",
@@ -417,8 +417,8 @@
         "name": "Slambient / Psy Roll",
         "sync": true,
         "frequencyFilter": {
-          "type": "OFF",
-          "cutoff": 12000,
+          "type": "LP",
+          "cutoff": 369.0030838358947,
           "q": 0.707,
           "mix": 1
         },
@@ -546,9 +546,86 @@
           ]
         },
         "presetId": 63
+      },
+      {
+        "version": 1,
+        "os": 12,
+        "params": [
+          0.2968181818181818,
+          0.5330577198519761,
+          0.2511781716734685,
+          0.621,
+          0.85,
+          0.85,
+          1,
+          0.7,
+          0.26666666666666666,
+          0.893,
+          0.805,
+          0.862
+        ],
+        "seed": 349445,
+        "mode": "AS",
+        "volume": 0.3,
+        "fixed": false,
+        "name": "Ritual psycore · Spiral 295",
+        "sync": true,
+        "frequencyFilter": {
+          "type": "OFF",
+          "cutoff": 12000,
+          "q": 0.707,
+          "mix": 1
+        },
+        "generative": {
+          "source": "OFF",
+          "depth": 1,
+          "response": 2,
+          "density": 20,
+          "variation": 1,
+          "character": "AUTO"
+        },
+        "instanceId": "c2084129-ce28-4a29-b04f-e56b03a9c3b1",
+        "midi": {
+          "enabled": true,
+          "assignment": "AUTO",
+          "source": "FILE",
+          "mode": "HYBRID",
+          "intensity": 0.8,
+          "transpose": 0,
+          "octave": 0,
+          "velocitySensitivity": 1,
+          "attack": 0.025,
+          "release": 0.3,
+          "pitchTracking": 1,
+          "depth": 0.65,
+          "balance": 0.6,
+          "minNote": 0,
+          "maxNote": 127,
+          "channel": -1,
+          "matrix": [
+            {
+              "source": "velocity",
+              "target": 3,
+              "amount": 0.25,
+              "smoothing": 0.05,
+              "min": 0,
+              "max": 1
+            },
+            {
+              "source": "pitch",
+              "target": 7,
+              "amount": 0.2,
+              "bipolar": true,
+              "smoothing": 0.1,
+              "min": 0,
+              "max": 1
+            }
+          ]
+        },
+        "presetId": 10
       }
     ],
-    "activePreset": 3
+    "activePreset": 4
   },
   "midiFile": {
     "metadata": null,
@@ -565,10 +642,10 @@
     "manualTracks": []
   },
   "transport": {
-    "bpm": 186,
+    "bpm": 220,
     "source": "INTERNAL",
     "running": false,
-    "beat": 1531.4269160997733,
+    "beat": 3028.6188783068783,
     "at": 0,
     "numerator": 4,
     "denominator": 4,

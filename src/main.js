@@ -30,7 +30,7 @@ function loadSession(s){const states=validateSession(s)?s.presets:[s];tempo=vali
  }activePreset=Number.isInteger(s.activePreset)?Math.max(0,Math.min(presets.length-1,s.activePreset)):0;state=presets[activePreset].state;engine=null;running=false}
 function loadStoredSession(){
  let saved;try{saved=JSON.parse(localStorage.getItem('dicefriend-generative-synth'))}catch{}
- // New installations start from the uploaded seven-layer ATMOSLAM project.
+ // New installations start from the uploaded eight-layer ATMOSLAM project.
  // Existing user sessions take precedence and are never overwritten here.
  const initial=validateSession(saved)?saved:validateSession(defaultProject.synth)?defaultProject.synth:state;
  loadSession(initial);
