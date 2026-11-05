@@ -209,3 +209,290 @@ header{padding:14px 0}header .wordmark{font-size:20px}.studio-panel .studio-titl
  .category-dice-symbol{font-size:38px}
  .knob-cell .knob-label{font-size:9px}
 }
+
+
+/* ===== ATMOSLAM UI THEME: PSYCORE / GRINDCORE / SLAMBIENT ===== */
+:root{
+  --bg-0:#06080a;
+  --bg-1:#0b1110;
+  --bg-2:#13191a;
+  --panel:#0d1415;
+  --panel-2:#121b1d;
+  --panel-3:#161015;
+  --paper:#edf2e5;
+  --muted:#99a39d;
+  --line:#2f3b3a;
+  --border:#4a5a55;
+  --acid:#baff66;
+  --acid-2:#5ef2b4;
+  --toxic:#d4ff78;
+  --blood:#a63b4f;
+  --rust:#7c4d32;
+  --violet:#7d5af0;
+  --shadow:#000000aa;
+}
+body{
+  color:var(--paper)!important;
+  background:
+    radial-gradient(circle at 18% 12%, rgba(94,242,180,.12), transparent 28%),
+    radial-gradient(circle at 82% 8%, rgba(166,59,79,.16), transparent 22%),
+    radial-gradient(circle at 50% 62%, rgba(94,242,180,.07), transparent 26%),
+    linear-gradient(180deg, #0a0f10 0%, #080b0c 55%, #050607 100%)!important;
+  position:relative;
+  overflow-x:hidden;
+}
+body::before{
+  content:'';
+  position:fixed; inset:0; pointer-events:none; z-index:-2;
+  background:
+    repeating-linear-gradient(90deg, rgba(255,255,255,.025) 0 1px, transparent 1px 78px),
+    repeating-linear-gradient(180deg, rgba(255,255,255,.018) 0 1px, transparent 1px 54px);
+  opacity:.33;
+}
+body::after{
+  content:'';
+  position:fixed; inset:0; pointer-events:none; z-index:-1;
+  background:
+    radial-gradient(circle at 50% 50%, transparent 0 54%, rgba(0,0,0,.34) 76%, rgba(0,0,0,.75) 100%),
+    linear-gradient(130deg, rgba(186,255,102,.03), rgba(0,0,0,0) 20%, rgba(166,59,79,.06) 76%, rgba(94,242,180,.05));
+  mix-blend-mode:screen;
+}
+header{
+  border-bottom:1px solid rgba(96,119,112,.48)!important;
+  background:linear-gradient(180deg, rgba(6,10,11,.9), rgba(10,15,16,.55));
+  box-shadow:0 10px 30px rgba(0,0,0,.24);
+  backdrop-filter:blur(10px);
+}
+.wordmark{
+  font-weight:800!important;
+  letter-spacing:-1.5px!important;
+  text-transform:uppercase;
+  color:#f3f6ed!important;
+  text-shadow:0 0 18px rgba(186,255,102,.08);
+}
+.wordmark span{
+  color:var(--acid-2)!important;
+  opacity:.85;
+}
+.eyebrow{
+  color:var(--acid)!important;
+  text-shadow:0 0 12px rgba(186,255,102,.22);
+}
+h1{
+  letter-spacing:-2.4px!important;
+  color:#f4f7ef;
+  text-shadow:0 5px 30px rgba(0,0,0,.35);
+}
+h1 em{color:#c5f788!important}
+.intro p{color:#b7c0ba!important}
+.instrument{
+  color:#eef2e6!important;
+  background:
+    linear-gradient(160deg, rgba(18,25,27,.96), rgba(11,14,16,.97) 38%, rgba(22,16,21,.94) 100%)!important;
+  border:1px solid rgba(120,149,138,.5)!important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.05),
+    inset 0 0 0 1px rgba(94,242,180,.05),
+    0 30px 80px rgba(0,0,0,.45),
+    0 0 0 1px rgba(0,0,0,.45)!important;
+  overflow:hidden;
+}
+.instrument::before{
+  content:'';
+  position:absolute; inset:0; pointer-events:none;
+  background:
+    linear-gradient(130deg, rgba(186,255,102,.06), transparent 24%, transparent 64%, rgba(166,59,79,.09) 100%),
+    radial-gradient(circle at 80% 12%, rgba(94,242,180,.08), transparent 24%),
+    repeating-linear-gradient(135deg, transparent 0 7px, rgba(255,255,255,.014) 7px 8px);
+  opacity:.9;
+}
+.instrument::after{
+  content:'RITUAL SIGNAL CHAIN';
+  position:absolute; right:20px; top:16px; pointer-events:none;
+  font:700 9px/1 'Space Mono',monospace; letter-spacing:2px;
+  color:rgba(212,255,120,.4);
+}
+.device-brand, .device-brand span, #modeLabel, .device-foot, .knob-page-help,
+#hardwarePresetGroup, #hardwarePresetHint, .switches>span, .switches small,
+.knob-label, .knob-value, .pad span, .pad small, .pad strong{
+  position:relative; z-index:1;
+}
+.device-brand{
+  color:#f6f8f1!important;
+  text-transform:uppercase;
+  text-shadow:0 0 20px rgba(186,255,102,.1);
+}
+.device-brand span, #modeLabel{color:#9ce9bf!important}
+.device-led{background:#3f342b!important; box-shadow:0 0 0 2px rgba(99,72,56,.65)!important}
+.device-led.on{background:#d0ff72!important;box-shadow:0 0 12px rgba(208,255,114,.9),0 0 0 2px rgba(208,255,114,.24)!important}
+.screw{background:linear-gradient(45deg,#50615d 43%,#182020 45% 55%,#9fb3a7 57%)!important}
+.instrument .hardware-preset-bar{
+  background:linear-gradient(160deg, rgba(26,35,37,.94), rgba(18,26,28,.96) 45%, rgba(39,21,28,.94))!important;
+  border:1px solid rgba(100,130,120,.62)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.05), 0 10px 22px rgba(0,0,0,.28)!important;
+}
+#hardwarePresetGroup{color:#98afa7!important}
+#hardwarePresetName{color:#f1f5ec!important;text-shadow:0 0 18px rgba(94,242,180,.09)}
+#hardwarePresetHint{color:#aab4ac!important}
+#rollCategoryPreset.category-dice{
+  background:
+    radial-gradient(circle at 30% 22%, rgba(255,255,255,.12), transparent 25%),
+    linear-gradient(160deg, #374f31, #1d2d23 55%, #122019)!important;
+  border-color:#93c27a!important;
+  color:#f5ffe5!important;
+  box-shadow:
+    0 0 0 1px rgba(186,255,102,.1),
+    0 6px 0 #101912,
+    0 10px 20px rgba(0,0,0,.35),
+    inset 0 1px 0 rgba(255,255,255,.08)!important;
+}
+#rollCategoryPreset.category-dice:hover{
+  box-shadow:0 0 24px rgba(186,255,102,.2), 0 6px 0 #101912, 0 10px 22px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.08)!important;
+}
+.category-dice-symbol{filter:drop-shadow(0 0 10px rgba(186,255,102,.22));}
+.knob{
+  border:4px solid #283031!important;
+  background:
+    conic-gradient(from 210deg, #33403f 0deg, #1e2525 55deg, #425252 140deg, #1d2324 220deg, #4b5b58 360deg)!important;
+  box-shadow:
+    inset 0 1px 1px rgba(255,255,255,.05),
+    0 0 0 1px rgba(94,242,180,.06),
+    0 10px 18px rgba(0,0,0,.38)!important;
+}
+.knob::before{
+  background:radial-gradient(circle at 35% 30%, #566664, #202729 72%)!important;
+  box-shadow:inset 0 1px 1px rgba(255,255,255,.08)!important;
+}
+.knob i{
+  background:linear-gradient(180deg, #f7ffd3, #baff66)!important;
+  box-shadow:0 0 8px rgba(186,255,102,.35);
+}
+.knob-cell .knob-label{color:#ebefe5!important;font-size:10px!important}
+.knob-cell .knob-value{color:#aef0c3!important}
+.knob-cell.knob-inactive .knob-label::after{color:#ff9181}
+.pad{
+  color:#eef4e9!important;
+  border:1px solid rgba(115,148,141,.45)!important;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,0) 15%),
+    linear-gradient(160deg, rgba(30,42,41,.96), rgba(18,25,27,.96) 45%, rgba(34,16,22,.95) 100%)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.05),0 7px 16px rgba(0,0,0,.26)!important;
+}
+.pad.active{
+  background:
+    radial-gradient(circle at 50% 10%, rgba(186,255,102,.18), transparent 30%),
+    linear-gradient(160deg, rgba(58,88,57,.98), rgba(24,42,29,.98) 50%, rgba(42,19,24,.95))!important;
+  box-shadow:0 0 22px rgba(186,255,102,.18), inset 0 1px 0 rgba(255,255,255,.08)!important;
+}
+.pad strong{display:block;font-size:13px;color:#eff3ea}
+.pad span{color:#a8f0c7}
+.pad small{color:#9aa6a1}
+.hardware-bottom{border-top:1px solid rgba(112,134,129,.28)!important}
+.switches #shift{
+  background:linear-gradient(180deg,#47232d,#23161b)!important;
+  border-color:#71414d!important;
+  color:#f2d7db!important;
+  box-shadow:0 2px 0 #10090b!important;
+}
+.switches #shift.active{
+  background:linear-gradient(180deg,#cbff74,#8ddf56)!important;
+  color:#182211!important;
+  border-color:#dfffaa!important;
+}
+aside,.studio-panel,.studio-transport,.project-menu,.master-scenes,.instrument .session-settings,
+.instrument>.preset-processing fieldset,.advanced-controls,.synth-details,.compact-help,.studio-random{
+  background:linear-gradient(180deg, rgba(13,20,21,.95), rgba(10,15,17,.92))!important;
+  border:1px solid rgba(86,105,100,.52)!important;
+  box-shadow:0 14px 32px rgba(0,0,0,.24), inset 0 1px 0 rgba(255,255,255,.03)!important;
+  color:var(--paper)!important;
+}
+.studio-panel,.studio-transport{border-radius:14px!important}
+.panel-title,.meter-caption,.param-heading,.seed-row,.studio-title small,.studio-title span,
+.os-label,#subtitle,.midi,.midi *,.studio-panel p,.studio-panel small,.utilities,.utilities p,
+.analysis-grid,label,legend,summary,.generator-status,.master-scenes small,.master-scenes p,
+.sample-meter-label, .project-menu summary, .compact-help summary, .advanced-controls summary, .synth-details summary{
+  color:#a8b3ad!important;
+}
+select,input[type=number],input[type=text],input[type=file],textarea{
+  background:#12191a!important;
+  color:#eef3ea!important;
+  border:1px solid rgba(93,112,106,.52)!important;
+  border-radius:8px!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.03);
+}
+button{
+  transition:background .12s ease, color .12s ease, border-color .12s ease, transform .08s ease, box-shadow .12s ease;
+}
+button:not(.knob):not(.pad):not(.category-dice){
+  background:linear-gradient(180deg, #22302f, #161d1f)!important;
+  border:1px solid rgba(95,122,111,.56)!important;
+  color:#f0f3ee!important;
+  border-radius:10px!important;
+  box-shadow:0 6px 14px rgba(0,0,0,.22), inset 0 1px 0 rgba(255,255,255,.04);
+}
+button:not(.knob):not(.pad):not(.category-dice):hover{background:linear-gradient(180deg, #2b3b38, #182021)!important}
+button:not(.knob):not(.pad):not(.category-dice):active{transform:translateY(1px)}
+.mode-row button.selected,
+#start,
+#transportStart,
+#samplePlay,
+#masterApply,
+#generationStart,
+#generationApply,
+#applySynthPreset,
+#applySamplePreset,
+#masterRecord,
+#studioDice{
+  background:linear-gradient(180deg, #cbff7b, #79cc63)!important;
+  color:#10170f!important;
+  border-color:#dfffab!important;
+  box-shadow:0 0 18px rgba(186,255,102,.18), inset 0 1px 0 rgba(255,255,255,.18)!important;
+}
+#masterRecord.recording{background:linear-gradient(180deg,#ff8471,#c44d5a)!important;color:#fff9f8!important;border-color:#ffb0a3!important}
+input[type=range]{accent-color:var(--acid)!important}
+canvas, meter{
+  background:#0c1112!important;
+  border:1px solid rgba(86,104,97,.42)!important;
+  border-radius:10px;
+}
+#presetTabs button, .studio-nav button{
+  border-radius:10px!important;
+}
+.studio-nav{
+  border:1px solid rgba(83,99,94,.45);
+  background:linear-gradient(180deg, rgba(10,15,16,.92), rgba(12,18,19,.86));
+  border-radius:14px;
+  box-shadow:0 12px 28px rgba(0,0,0,.18);
+}
+.studio-nav button[aria-selected="true"]{
+  background:linear-gradient(180deg, rgba(186,255,102,.18), rgba(94,242,180,.12))!important;
+  color:#eff8e8!important;
+  border:1px solid rgba(186,255,102,.26)!important;
+}
+.drop-zone{
+  border:1px dashed rgba(94,242,180,.45)!important;
+  border-radius:14px!important;
+  background:linear-gradient(180deg, rgba(18,24,26,.82), rgba(12,17,19,.88))!important;
+}
+.master-scenes{
+  position:relative; overflow:hidden;
+}
+.master-scenes::before{
+  content:'MASTER SCENES'; position:absolute; top:10px; right:14px; pointer-events:none;
+  font:700 9px/1 'Space Mono',monospace; letter-spacing:2px; color:rgba(186,255,102,.28)
+}
+.utilities summary, .compact-help summary, .advanced-controls summary, .synth-details summary, .project-menu summary, .studio-random summary{
+  color:#e5ebe0!important;
+}
+footer{color:#71807a!important}
+#message{color:#bde7c8!important}
+#presetPreview{color:#d2dad4!important}
+.factory-bank output{padding:10px 12px;border-radius:10px;background:rgba(255,255,255,.02);border:1px solid rgba(96,117,111,.32)}
+@media(max-width:800px){
+  .instrument::after{display:none}
+}
+@media(max-width:600px){
+  header{backdrop-filter:none}
+  .studio-nav{border-radius:12px}
+  .instrument,.studio-panel,.studio-transport{border-radius:16px!important}
+}
