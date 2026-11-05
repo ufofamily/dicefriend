@@ -1,0 +1,38 @@
+{
+  "name": "dicefriend-generative-studio",
+  "version": "5.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1 --port 5176",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test": "node tests/dsp.mjs",
+    "test:controls": "node tests/bass-controls.mjs",
+    "test:sync": "node tests/sync.mjs",
+    "test:studio": "node tests/studio.mjs",
+    "test:browser": "node tests/browser.mjs",
+    "test:genres": "node tests/genres.mjs",
+    "test:midi": "node tests/midi.mjs",
+    "test:ambient": "node tests/ambient-controls.mjs",
+    "test:timing": "node tests/midi-timing.mjs",
+    "test:midi-browser": "node tests/midi-browser.mjs",
+    "test:stress": "node tests/performance.mjs",
+    "test:slambient": "node tests/slambient.mjs",
+    "test:compact-browser": "node tests/compact-browser.mjs",
+    "test:generative": "node tests/generative.mjs",
+    "test:generative-browser": "node tests/generative-browser.mjs",
+    "test:master": "node tests/master-scenes.mjs",
+    "test:style": "node tests/style-profiles.mjs",
+    "test:forensics": "node tests/forensics-presets.mjs",
+    "test:dice": "node tests/category-dice.mjs",
+    "test:knobs": "node tests/preset-controls.mjs",
+    "test:pages": "node tests/category-dice.mjs && node tests/preset-controls.mjs && node tests/forensics-presets.mjs && node tests/master-scenes.mjs && node tests/studio.mjs"
+  },
+  "devDependencies": {
+    "vite": "^6.4.1"
+  },
+  "dependencies": {
+    "@tonejs/midi": "^2.0.28",
+    "midi-file": "^1.2.4"
+  }
+}

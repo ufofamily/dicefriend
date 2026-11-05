@@ -1,0 +1,13 @@
+import assert from 'node:assert/strict';
+import {MidiSequencer} from '../src/midi/MidiSequencer.js';
+import {Transport,transportBeat,transportBpm} from '../src/audio/Transport.js';
+import {midiDefaults} from '../src/parameters.js';
+const context={currentTime:0,sampleRate:48000},transport=new Transport();transport.bind(context);
+const events=[{type:'on',note:60,velocity:1,channel:0,beat:0},{type:'off',note:60,channel:0,beat:.5},{type:'on',note:64,velocity:1,channel:0,beat:1},{type:'off',note:64,channel:0,beat:2}];
+const file={durationBeats:4,tempos:[{beat:0,bpm:120},{beat:2,bpm:60}],tracks:[{id:'t',notes:[],events}]};
+const engine={queue:[],clears:0,allNotesOff(){this.queue=[];this.clears++},setMidiModulation(){},enqueueMidi(e){this.queue.push(...e)}};
+const state={instanceId:'p',os:13,midi:midiDefaults(13)};const seq=new MidiSequencer(context,transport,()=>[{state,engine}]);seq.load(file);seq.configure({follow:true,tempoMode:'PROJECT'},[{trackId:'t',presetInstanceId:'p',intensity:1,transpose:0}]);seq.play(0);assert.equal(engine.queue.filter(e=>e.type==='on').length,1);assert.equal(engine.queue[0].frame,0);
+context.currentTime=.2;transport.setBpm(60);assert(Math.abs(seq.beat-.4)<1e-8);assert.equal(engine.queue.filter(e=>e.note===60&&e.type==='on').length,1);context.currentTime=.7;seq.pump(seq.generation);assert.equal(engine.queue.find(e=>e.type==='on'&&e.note===64).frame,38400);seq.pause();const position=seq.position;context.currentTime=2;assert.equal(seq.beat,position);seq.play(2);assert(Math.abs(seq.beat-position)<1e-8);seq.seek(1);assert.equal(seq.beat,1);assert(engine.queue.some(e=>e.type==='on'&&e.note===64));seq.configure({tempoMode:'FILE'});assert(Math.abs(seq.beat-1)<1e-8);assert(transport.state.tempoMap);seq.stop();assert.equal(seq.beat,0);assert.equal(engine.queue.length,0);
+context.currentTime=0;seq.configure({loop:true,loopStart:0,loopEnd:1,tempoMode:'FILE'});seq.play(0);context.currentTime=.4;seq.pump(seq.generation);assert(engine.queue.some(e=>e.type==='allOff'&&e.frame===24000));assert(engine.queue.some(e=>e.type==='on'&&e.frame===24000));assert(Math.abs(seq.beat-.8)<1e-8,'lookahead must not jump displayed position');context.currentTime=.55;assert(Math.abs(seq.beat-.1)<1e-8);seq.dispose();
+const clock={bpm:120,at:0,beat:0,running:true,tempoMap:file.tempos};assert.equal(transportBeat(clock,2),3);assert.equal(transportBpm(clock,2),60);assert.equal(transportBeat({...clock,loop:true,loopStart:0,loopEnd:4},3.5),1);
+console.log('PASS MIDI timing: BPM rebase, no duplicate queued notes, pause/resume, seek, source switch, loop lookahead, exact loop frame, all-off, shared tempo map');
