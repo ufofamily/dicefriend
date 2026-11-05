@@ -526,3 +526,80 @@ footer{color:#71807a!important}
 #restoreDefaultProject{display:block;width:100%;margin-top:8px;padding:10px!important;text-align:center}
 @media(max-width:700px){.control-pages{padding:10px}.control-faders{gap:6px 8px}.control-fader{padding:6px 7px}.fader-readout{gap:6px}.fader-readout output{font-size:10px;min-width:56px}.control-tabbar button[role=tab]{font-size:10px!important;padding:9px 5px!important}}
 @media(max-width:420px){.control-faders{grid-template-columns:1fr}.fader-readout output{min-width:80px}.control-fader-label{font-size:11px}.control-workspace{margin-top:8px}}
+
+
+/* ==== ENDLESSKNOT / PSYCORE MONO THEME + PRESET TABPAGES ==== */
+:root{--paper:#f2f2ee;--muted:#9e9e98;--acid:#f2f2ee;--line:#3e3e3a}
+body{
+  background:
+    radial-gradient(circle at 20% 12%, rgba(255,255,255,.05), transparent 22%),
+    radial-gradient(circle at 82% 18%, rgba(255,255,255,.03), transparent 18%),
+    linear-gradient(180deg,#050505,#0a0a0a 35%,#050505 100%)!important;
+  color:#f4f4ef!important;
+}
+body::before{content:'';position:fixed;inset:0;pointer-events:none;background:
+  repeating-linear-gradient(90deg, rgba(255,255,255,.03) 0 1px, transparent 1px 64px),
+  repeating-linear-gradient(180deg, rgba(255,255,255,.018) 0 1px, transparent 1px 48px);opacity:.22}
+header{background:linear-gradient(180deg,rgba(0,0,0,.92),rgba(8,8,8,.86))!important;border-bottom:1px solid #2d2d2a!important}
+.wordmark,#hardwarePresetName,.device-brand,h1{color:#f7f7f4!important;text-transform:uppercase}
+.wordmark{letter-spacing:-1.8px!important}
+.instrument,.studio-panel,.studio-transport,.project-menu,.master-scenes,.transport,.utilities,.keyboard-help,.studio-random,.compact-help,.advanced-controls{
+  background:linear-gradient(180deg, rgba(10,10,10,.97), rgba(18,18,18,.95))!important;
+  color:#efefeb!important;
+  border:1px solid #494944!important;
+  box-shadow:0 18px 42px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.05)!important;
+}
+.instrument{background:
+  linear-gradient(180deg, rgba(11,11,11,.98), rgba(7,7,7,.98))!important;
+  border:1px solid #676761!important;
+  color:#f2f2ed!important;
+}
+.instrument::before{content:'';position:absolute;inset:0;pointer-events:none;background:
+  repeating-linear-gradient(135deg, transparent 0 8px, rgba(255,255,255,.025) 8px 9px),
+  radial-gradient(circle at 85% 16%, rgba(255,255,255,.06), transparent 18%),
+  linear-gradient(145deg, rgba(255,255,255,.03), transparent 28%, transparent 70%, rgba(255,255,255,.015));opacity:.8}
+.instrument::after{content:'ENDLESS SIGNAL';position:absolute;right:16px;top:14px;font:700 9px/1 "Space Mono",monospace;letter-spacing:2.3px;color:rgba(255,255,255,.34)}
+.device-head,.hardware-preset-bar,.control-workspace,.preset-meta-workspace,.hardware-bottom{position:relative;z-index:1}
+.device-led{background:#484843!important;box-shadow:0 0 0 2px #1a1a18!important}.device-led.on{background:#fff!important;box-shadow:0 0 10px rgba(255,255,255,.75)!important}
+#modeLabel,.eyebrow,.device-brand span,.panel-title,.meter-caption,.param-heading,.seed-row,.os-label,#subtitle,.knob-page-help,#hardwarePresetGroup,#hardwarePresetHint,.switches>span,.switches small,.pad small,.studio-panel p,.studio-panel small,.utilities p,.midi,.midi *{color:#a5a5a0!important}
+button:not(.pad):not(.dice):not(.category-dice),select,input:not([type=range]):not([type=checkbox]),textarea{
+  background:linear-gradient(180deg,#171717,#101010)!important;border:1px solid #5e5e58!important;color:#f1f1ed!important;border-radius:9px!important}
+button:hover:not(.pad):not(.dice):not(.category-dice){background:linear-gradient(180deg,#1f1f1f,#131313)!important}
+#start,#transportStart,#samplePlay,#applySynthPreset,#applySamplePreset,#masterRecord,#studioDice,.mode-row button.selected{
+  background:linear-gradient(180deg,#f2f2ef,#c7c7c1)!important;color:#080808!important;border-color:#fff!important;box-shadow:0 0 16px rgba(255,255,255,.12)!important}
+#masterRecord.recording{background:linear-gradient(180deg,#ffffff,#cfcfcf)!important;color:#000!important}
+.hardware-preset-bar{border:1px solid #5b5b56!important;background:linear-gradient(180deg,rgba(14,14,14,.96),rgba(20,20,20,.94))!important;padding:16px 18px!important}
+.hardware-preset-copy{display:grid;gap:8px;width:100%}
+.hardware-preset-titleline{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.inline-dice{min-width:110px;min-height:54px;padding:8px 10px!important;margin-left:auto}
+#rollCategoryPreset.category-dice{background:linear-gradient(180deg,#fafaf8,#cfcfca)!important;color:#050505!important;border:1px solid #fff!important;box-shadow:0 0 0 1px rgba(255,255,255,.14),0 8px 18px rgba(0,0,0,.35)!important}
+#rollCategoryPreset .category-dice-symbol{filter:none!important}
+.control-tabbar button[role=tab],.preset-meta-tab{
+  position:relative;flex:1 0 auto;min-width:0;padding:11px 10px!important;border-radius:10px 10px 0 0!important;border:1px solid #595954!important;background:linear-gradient(180deg,#191919,#111)!important;color:#b9b9b4!important;font:700 11px/1.1 'Space Mono',monospace!important;letter-spacing:.8px;box-shadow:none!important;min-height:42px;text-transform:uppercase}
+.control-tabbar button[role=tab][aria-selected=true],.preset-meta-tab[aria-selected=true]{background:linear-gradient(180deg,#f1f1ee,#cfcfca)!important;color:#090909!important;border-color:#fff!important;border-bottom-color:#d9d9d3!important}
+.control-pages,.preset-meta-pages{margin-top:-1px;border:1px solid #696963;border-radius:12px;background:linear-gradient(180deg,rgba(14,14,14,.98),rgba(18,18,18,.97));padding:14px;box-shadow:inset 0 1px 0 rgba(255,255,255,.04),0 10px 24px #0004}
+.preset-meta-workspace{margin-top:12px}
+.preset-meta-tabbar{display:flex;gap:3px;overflow-x:auto;scrollbar-width:thin;padding:0 5px}
+.preset-meta-page[hidden]{display:none!important}
+.preset-meta-page .session-settings,.preset-meta-page .transport,.preset-meta-page #info,.preset-meta-page .preset-midi,.preset-meta-page .extension-control{margin:0;border:0!important;background:transparent!important;box-shadow:none!important;padding:0!important}
+.preset-meta-page .transport{padding-top:6px!important}
+.preset-meta-page .transport .file-actions{margin-left:0}
+.preset-meta-page .session-settings .sync-toolbar{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px}
+.preset-meta-page .session-settings label{display:grid;gap:6px;font:11px 'Space Mono',monospace;color:#d7d7d2!important;text-transform:uppercase;letter-spacing:1px}
+.preset-meta-page .session-settings button{min-height:44px}
+#info{display:grid;gap:12px}
+canvas{background:#070707!important;border:1px solid #4c4c49!important}
+#parameters{gap:9px 14px}.param{padding-bottom:6px;border-bottom:1px dotted #31312f}.param b{color:#f4f4ef!important}
+input[type=range]{accent-color:#ffffff!important}
+.control-fader{background:linear-gradient(180deg,#121212,#0b0b0b)!important;border:1px solid #4f4f4a!important}
+.control-fader-label{color:#efefec!important}
+.fader-readout output{color:#ededeb!important;background:#090909!important;border:1px solid #454541!important}
+.fader-readout{--fader-fill:50%;background:linear-gradient(180deg,#070707,#121212)!important}
+.fader-readout input[type=range]{filter:grayscale(1) contrast(1.05)}
+.pad{background:linear-gradient(180deg,#151515,#0a0a0a)!important;border:1px solid #5f5f59!important;color:#f5f5f0!important}
+.pad.active{background:linear-gradient(180deg,#f2f2ef,#c7c7c1)!important;color:#050505!important;box-shadow:0 0 18px rgba(255,255,255,.15)!important}
+.switches #shift,.switches #shift.active,#dice.dice{background:linear-gradient(180deg,#f2f2ef,#c7c7c1)!important;color:#050505!important;border:1px solid #fff!important}
+#message{color:#ededeb!important}
+.session-bar{background:linear-gradient(180deg,rgba(8,8,8,.92),rgba(12,12,12,.9))!important;border:1px solid #3b3b37!important;box-shadow:0 12px 28px rgba(0,0,0,.28)}
+#presetTabs button[aria-selected=true]{background:linear-gradient(180deg,#f2f2ef,#c7c7c1)!important;color:#050505!important;border-color:#fff!important}
+@media(max-width:780px){.preset-meta-page .session-settings .sync-toolbar{grid-template-columns:1fr}.inline-dice{width:100%}}
