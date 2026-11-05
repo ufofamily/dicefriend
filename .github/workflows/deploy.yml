@@ -1,0 +1,63 @@
+name: Build and deploy diceFriend (Vite)
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: dicefriend-pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Install project dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Build web app for /dicefriend/
+        run: npm run build
+        env:
+          PAGES_BASE_PATH: /dicefriend/
+      - name: Verify compiled entrypoint
+        shell: bash
+        run: |
+          test -f dist/index.html
+          test -d dist/assets
+          if grep -Eq '<script[^>]+src=["\x27](\./)?src/main\.js' dist/index.html; then
+            echo 'ERROR: Uncompiled src/main.js in dist/index.html' >&2
+            exit 1
+          fi
+          if ! find dist/assets -maxdepth 1 -name '*.js' -print -quit | grep -q .; then
+            echo 'ERROR: Missing compiled JavaScript' >&2
+            exit 1
+          fi
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
+      - name: Upload compiled site
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: ./dist
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Publish site
+        id: deployment
+        uses: actions/deploy-pages@v4
