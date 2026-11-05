@@ -71,33 +71,34 @@ const pageIndex=()=>layerIndex;
 const controlAt=j=>currentLayout().pages[pageIndex()].controls[j];
 const message=t=>$('#message').textContent=t;
 const save=()=>{clearTimeout(saveTimer);saveTimer=setTimeout(()=>{try{localStorage.setItem('dicefriend-generative-synth',JSON.stringify(sessionData()));studio?.save()}catch{message('Session storage is unavailable; export JSON to save.')}},200)};
-function sendParam(i,v){state.params[i]=Math.max(0,Math.min(1,v));engine?.setParameter(i,state.params[i]);render();save()}
+function sendParam(i,v){state.params[i]=Math.max(0,Math.min(1,v));engine?.setParameter(i,state.params[i]);renderControls(true);save()}
 function sendControl(control,value){
  const result=writeControl(state,control,value);
  if(result.type==='dsp')engine?.setParameter(result.index,result.value);
  else{engine?.setExtensions(state);studio?.extensionControl.refresh()}
- render();save();
+ renderControls(true);save();
 }
 function apply(){engine.node.port.onmessage=({data})=>{if(data.type==='chaos')studio?.modulate(data.value)};engine.randomize(state.seed);engine.setMode(state.mode);state.params.forEach((v,i)=>engine.setParameter(i,v));engine.volume(state.volume);engine.setExtensions(state);engine.setMidiModulation({...state.midi,enabled:false});syncEngine(engine,state)}
 function syncPad(i){const active=padPointers.get(i);const pad=$$('.pad')[i];pad.classList.toggle('active',active.size>0);engine?.touch(i,active.size?Math.max(...active.values()):0,active.size>0)}
 function release(){for(const pad of $$('.pad')){pad.classList.remove('active');padPointers.get(Number(pad.dataset.pad))?.clear()}for(let i=0;i<3;i++)engine?.touch(i,0,false)}
 function setMode(m){release();state.mode=m;engine?.setMode(m);render();save()}
-function render(){
- renderSession();const sys=systems[state.os],layout=currentLayout(),page=layout.pages[pageIndex()];
- $('#os').value=state.os;$('#subtitle').textContent=sys.subtitle;
- $('#seed').textContent=state.seed.toString(16).toUpperCase().padStart(8,'0');$('#fixed').checked=state.fixed;
- $('#modeLabel').textContent=state.mode==='AS'?'AS · Авто':'TS · Касания';
- $('#as').classList.toggle('selected',state.mode==='AS');$('#ts').classList.toggle('selected',state.mode==='TS');
- $$('.control-tabbar [role="tab"]').forEach((tab,i)=>{
+function render(){renderSession();renderControls(false)}
+function renderControls(light=false){
+ const sys=systems[state.os],layout=currentLayout(),page=layout.pages[pageIndex()];
+ if(!light){$('#os').value=state.os;$('#subtitle').textContent=sys.subtitle;}
+ if(!light){$('#seed').textContent=state.seed.toString(16).toUpperCase().padStart(8,'0');$('#fixed').checked=state.fixed;}
+ if(!light)$('#modeLabel').textContent=state.mode==='AS'?'AS · Авто':'TS · Касания';
+ if(!light){$('#as').classList.toggle('selected',state.mode==='AS');$('#ts').classList.toggle('selected',state.mode==='TS');}
+ if(!light)$$('.control-tabbar [role="tab"]').forEach((tab,i)=>{
   const selected=i===pageIndex();
   tab.setAttribute('aria-selected',String(selected));
   tab.tabIndex=selected?0:-1;
   $('#control-page-'+i).hidden=!selected;
  });
- $('#knobPageHelp').textContent=page.description;
- $('#volume').value=state.volume;$('#volumeValue').textContent=Math.round(state.volume*100)+'%';
- $('#pickup').textContent=pickup.size?'PICKUP ARMED':'LIVE';
- $$('.control-faders').forEach((panel,i)=>{
+ if(!light)$('#knobPageHelp').textContent=page.description;
+ if(!light){$('#volume').value=state.volume;$('#volumeValue').textContent=Math.round(state.volume*100)+'%';}
+ if(!light)$('#pickup').textContent=pickup.size?'PICKUP ARMED':'LIVE';
+ (light?[$('.control-faders[data-page="'+pageIndex()+'"]')]:$$('.control-faders')).forEach(panel=>{const i=Number(panel.dataset.page);
   const controls=layout.pages[i].controls;
   [...panel.children].forEach((cell,j)=>{
    const control=controls[j];
@@ -114,7 +115,9 @@ function render(){
    cell.querySelector('.fader-readout').style.setProperty('--fader-fill',(value*100).toFixed(1)+'%');
   });
  });
- $('#parameters').replaceChildren(...sys.params.map((p,i)=>{
+ if(light){
+  $('#parameters').querySelectorAll('.param b').forEach((el,i)=>el.textContent=format(sys.params[i],state.params[i]));
+ }else $('#parameters').replaceChildren(...sys.params.map((p,i)=>{
   const el=document.createElement('div');el.className='param';const name=document.createElement('span');
   name.textContent=String(i+1).padStart(2,'0')+' '+p.name;
   const val=document.createElement('b');val.textContent=format(p,state.params[i]);el.append(name,val);return el;
@@ -247,7 +250,7 @@ window.addEventListener('keyup',e=>{
  if(pad>=0&&keysDown.has(e.code)){keysDown.delete(e.code);padPointers.get(pad).delete(-2);syncPad(pad)}
  if(e.code==='KeyV'&&keysDown.has(e.code)){keysDown.delete(e.code);diceEnd()}
 });
-const canvas=$('#scope'),ctx=canvas.getContext('2d'),samples=new Float32Array(2048);function draw(){requestAnimationFrame(draw);ctx.fillStyle='#10150e';ctx.fillRect(0,0,canvas.width,canvas.height);ctx.strokeStyle='#263120';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(0,80);ctx.lineTo(600,80);ctx.stroke();let peak=0;if(engine&&running){for(let channel=0;channel<2;channel++){engine.scopes[channel].getFloatTimeDomainData(samples);ctx.strokeStyle=channel?'#a1afa0':'#c6dd91';ctx.lineWidth=1.5;ctx.beginPath();for(let i=0;i<600;i++){const s=samples[i*3];peak=Math.max(peak,Math.abs(s));const y=(channel?115:45)+s*40;if(i===0)ctx.moveTo(i,y);else ctx.lineTo(i,y)}ctx.stroke()}}$('#level').textContent=peak>.00001?(20*Math.log10(peak)).toFixed(1)+' dB':'−∞ dB'}loadStoredSession();render();draw();
+const canvas=$('#scope'),ctx=canvas.getContext('2d'),samples=new Float32Array(2048);let lastScopePaint=0;function draw(now=0){requestAnimationFrame(draw);if(document.hidden||$('#presetPanel').hidden||now-lastScopePaint<(running?50:350))return;lastScopePaint=now;ctx.fillStyle='#080808';ctx.fillRect(0,0,canvas.width,canvas.height);ctx.strokeStyle='#263120';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(0,80);ctx.lineTo(600,80);ctx.stroke();let peak=0;if(engine&&running){for(let channel=0;channel<2;channel++){engine.scopes[channel].getFloatTimeDomainData(samples);ctx.strokeStyle=channel?'#a1afa0':'#c6dd91';ctx.lineWidth=1.5;ctx.beginPath();for(let i=0;i<600;i++){const s=samples[i*3];peak=Math.max(peak,Math.abs(s));const y=(channel?115:45)+s*40;if(i===0)ctx.moveTo(i,y);else ctx.lineTo(i,y)}ctx.stroke()}}$('#level').textContent=peak>.00001?(20*Math.log10(peak)).toFixed(1)+' dB':'−∞ dB'}loadStoredSession();render();draw();
 
 studio=setupStudio({
  replaceCurrentPreset,

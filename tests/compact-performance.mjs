@@ -1,0 +1,15 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+const read=f=>fs.readFileSync(new URL('../'+f,import.meta.url),'utf8');
+const h=read('index.html'),css=read('src/style.css'),main=read('src/main.js'),studio=read('src/studio.js');
+assert(h.includes('id="hardwarePresetName"')&&h.includes('id="rollCategoryPreset"'));
+assert(!h.includes('category-dice-caption'));
+assert(css.includes('flex:0 0 44px!important'));
+assert(css.includes('body::before,body::after'));
+assert(!css.includes('backdrop-filter:blur('));
+assert(main.includes('function renderControls(light=false)'));
+assert(main.includes('renderControls(true);save()'));
+assert(main.includes('lastScopePaint'));
+assert(studio.includes('lastStudioPaint'));
+assert(studio.includes("split(' › ').slice(-2)"));
+console.log('PASS compact mono header, lighter UI drawing and local fader updates');
