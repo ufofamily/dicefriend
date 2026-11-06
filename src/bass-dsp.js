@@ -67,7 +67,7 @@ export class BassDSP {
     const kickT = this.kickAge;
     // Exponential pitch sweep integrated into phase, with a short click and click-free attack.
     const sweep = Math.exp(-kickT / (ritual ? .024 : .009));
-    const kickFreq = Math.min(sr * .3, p[1] * 2 ** (p[3] * sweep));
+    const kickFreq = Math.min(5200, sr * .24, p[1] * 2 ** (p[3] * sweep));
     this.kickPhase = (this.kickPhase + kickFreq * dt) % 1;
     const kickEnvelope = Math.exp(-kickT / p[2]) * Math.min(1, kickT / .0008);
     let kick = Math.sin(TAU * this.kickPhase) * kickEnvelope * this.kickAmp;

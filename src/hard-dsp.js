@@ -25,7 +25,7 @@ export class HardDSP {
  if(this.pendingHat>=0){this.pendingHat-=dt;if(this.pendingHat<0)this.hatAge=0}
  const age=this.kickAge,tail=Math.min(p[2],beat*(hyper?3:1.1));
  const sweep=Math.exp(-age/(ritual?.007:tek?.014:.012));
- this.kickPhase=(this.kickPhase+Math.min(sr*.35,p[1]*2**(p[3]*sweep))*dt)%1;
+ this.kickPhase=(this.kickPhase+Math.min(5200,sr*.24,p[1]*2**(p[3]*sweep))*dt)%1;
  const raw=Math.sin(TAU*this.kickPhase),colour=p[5];
  let kick=ritual?raw:Math.tanh((raw+Math.sin(TAU*this.kickPhase*3)*colour*.3)*(1+colour*7))/(1+colour*.35);
  kick*=Math.exp(-age/tail)*Math.min(1,age/.0005)*this.kickAmp;

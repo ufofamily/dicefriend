@@ -27,5 +27,22 @@ export class Engine{
  setMode(mode){this.node.port.postMessage({type:'mode',mode})}
  touch(pad,pressure,active){this.node.port.postMessage({type:'touch',pad,pressure,active})}
  volume(v){this.requestedVolume=v;automate(this.gain.gain,synthMuted?0:v,this.context.currentTime)}
- async dispose(){voices.delete(this);if(controlSource&&this.node)try{controlSource.disconnect(this.node)}catch{}this.unsubscribe?.();if(!this.node)return;this.node.port.postMessage({type:'dispose'});this.node.disconnect();this.split.disconnect();this.scopes.forEach(a=>a.disconnect());this.gain.disconnect()}
+ async dispose(){
+  voices.delete(this);
+  if(!this.node)return;
+  // Crossfade the retiring instance instead of cutting a live oscillator at
+  // an arbitrary phase (the main cause of audible preset-switch pops).
+  if(this.context?.state==='running'){
+   const time=this.context.currentTime,param=this.gain.gain;
+   param.cancelScheduledValues(time);
+   param.setValueAtTime(param.value,time);
+   param.linearRampToValueAtTime(0,time+.014);
+   await new Promise(resolve=>setTimeout(resolve,22));
+  }
+  if(controlSource)try{controlSource.disconnect(this.node)}catch{}
+  this.unsubscribe?.();
+  this.node.port.postMessage({type:'dispose'});
+  this.node.disconnect();this.split.disconnect();
+  this.scopes.forEach(a=>a.disconnect());this.gain.disconnect();
+ }
 }
