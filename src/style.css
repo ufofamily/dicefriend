@@ -320,3 +320,14 @@ canvas{background:#090909!important;border:1px solid #333!important;border-radiu
 #rollCategoryPreset.category-dice:not(:disabled):hover{background:#fff!important;color:#080808!important;transform:none!important;box-shadow:none!important}
 #rollCategoryPreset.category-dice:not(:disabled):active{background:#dededa!important;transform:translateY(1px)!important;box-shadow:none!important}
 #rollCategoryPreset.category-dice:disabled{filter:none!important}
+
+/* Autonomous mode: AUDIO/MIDI are no longer user-facing inputs. */
+.utilities,.sample-analysis,#masterAudioUpload,#masterMidiUpload,#masterSource,.midi,.preset-midi{display:none!important}
+.peer-processing fieldset{margin:0 0 10px!important}
+.peer-source-controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:9px;padding:8px}
+.peer-source-controls label{display:flex;gap:7px;align-items:center;font-size:12px;line-height:1.4;color:#ddd}
+.peer-processing .generator-status{padding:7px 9px;border:1px solid #494949;background:#111;color:#e8e8e8;font:11px 'Space Mono',monospace}
+#preset-meta-tab-2{min-width:95px}
+
+#diceMode,.studio-random #sampleRandom,.studio-random fieldset:has(#sampleRandom){display:none!important}
+.studio-random .random-lists{display:block}

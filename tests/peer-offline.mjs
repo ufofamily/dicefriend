@@ -1,0 +1,12 @@
+import assert from 'node:assert/strict';
+import {OfflinePeerRouter} from '../src/generative/OfflinePeerRouter.js';
+const received=[];
+const a={preset:{instanceId:'a',generative:{source:'PEER',density:20,send:1,receive:1,receiveFrom:'ALL'}},core:{outboundEvent:{pad:0,velocity:.8},receivePeer:e=>received.push(['a',e])}};
+const b={preset:{instanceId:'b',generative:{source:'PEER',density:20,send:1,receive:1,receiveFrom:'ALL'}},core:{outboundEvent:null,receivePeer:e=>received.push(['b',e])}};
+const router=new OfflinePeerRouter(24000);
+router.route([a,b],0);assert.equal(received.length,1);assert.equal(received[0][0],'b');
+a.core.outboundEvent={pad:1,velocity:.8};router.route([a,b],128);assert.equal(received.length,1,'rate limit');
+a.core.outboundEvent={pad:1,velocity:.8};router.route([a,b],6000);assert.equal(received.length,2,'delivered after refractory');
+const c={...b,preset:{...b.preset,instanceId:'c',generative:{...b.preset.generative,receiveFrom:['not-a']}},core:{outboundEvent:null,receivePeer:e=>received.push(['c',e])}};
+a.core.outboundEvent={pad:1,velocity:.8};router.route([a,b,c],12000);assert(!received.some(x=>x[0]==='c'));
+console.log('PASS offline routing: one-hop, cooldown, sender isolation, source allowlists');

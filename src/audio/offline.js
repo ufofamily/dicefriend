@@ -1,13 +1,15 @@
 import {routedEvents,frameEvents} from '../midi/timing.js';
 import {SampleEffects} from './SampleEffects.js';
 import {SynthCore} from '../dsp.js';
+import {OfflinePeerRouter} from '../generative/OfflinePeerRouter.js';
 import {SampleProcessor} from './SampleProcessor.js';
 import {MasterBus} from './MasterBus.js';
 import {encodeWav} from './wav.js';
 export async function offlineExport(project,buffer,seconds,sr,bits,midiFile=null){
- if(project.synth.presets.some(p=>p.generative?.source==='AUDIO')&&!buffer)throw Error('Для аудиогенерации повторно загрузите сэмпл');
- if(project.synth.presets.some(p=>p.generative?.source==='MIDI'&&(p.midi?.source==='LIVE'||!midiFile)))throw Error('Offline-генерации нужен MIDI-файл; живой вход не сохраняется');
- if(project.midiFile?.metadata&&!midiFile)throw Error('Для offline MIDI повторно выберите исходный .mid файл');
+ const interactive=project.synth.presets.some(p=>p.generative?.source==='PEER');
+ if(!interactive&&project.synth.presets.some(p=>p.generative?.source==='AUDIO')&&!buffer)throw Error('Для аудиогенерации повторно загрузите сэмпл');
+ if(!interactive&&project.synth.presets.some(p=>p.generative?.source==='MIDI'&&(p.midi?.source==='LIVE'||!midiFile)))throw Error('Offline-генерации нужен MIDI-файл; живой вход не сохраняется');
+ if(!interactive&&project.midiFile?.metadata&&!midiFile)throw Error('Для offline MIDI повторно выберите исходный .mid файл');
  const midi=project.midiFile;const routed=midiFile?routedEvents(midiFile,midi.routes,project.synth.presets,midi.settings):null;
  const length=Math.round(seconds*sr);const context=new OfflineAudioContext(2,length,sr),master=new MasterBus(context);master.update({...project.master,monitor:true});
  const mixed=context.createBuffer(2,length,sr),out=[mixed.getChannelData(0),mixed.getChannelData(1)];
@@ -23,7 +25,25 @@ export async function offlineExport(project,buffer,seconds,sr,bits,midiFile=null
   const player=context.createBufferSource(),effects=new SampleEffects(context,master.input);effects.update(p);player.buffer=controlBuffer;player.connect(effects.input);player.start();
  }
 
- for(const preset of project.synth.presets){
+ if(interactive){
+  const voices=project.synth.presets.map(preset=>{
+   const core=new SynthCore(sr,preset.os,preset.seed);core.setExtensions(preset);core.setMode(preset.mode);
+   preset.params.forEach((v,i)=>core.setParameter(i,v));core.transport=preset.sync&&clock.source!=='FREE'?clock:null;
+   return {core,preset};
+  });
+  const network=new OfflinePeerRouter(sr),left=new Float32Array(128),right=new Float32Array(128);
+  for(let frame=0;frame<length;frame+=128){
+   for(const voice of voices){
+    voice.core.render(left,right,frame);
+    for(let i=0;i<Math.min(128,length-frame);i++){
+     out[0][frame+i]+=left[i]*voice.preset.volume;
+     out[1][frame+i]+=right[i]*voice.preset.volume;
+    }
+   }
+   network.route(voices,frame);
+   if(frame%(128*2048)===0)await new Promise(resolve=>setTimeout(resolve,0));
+  }
+ }else for(const preset of project.synth.presets){
   const core=new SynthCore(sr,preset.os,preset.seed);core.setExtensions(preset);core.setMode(preset.mode);preset.params.forEach((v,i)=>core.setParameter(i,v));if(midiFile){core.setMidiModulation({...preset.midi,enabled:!!routed.get(preset.instanceId)?.length});core.enqueueMidi(frameEvents(routed.get(preset.instanceId)||[],midiFile,midi.settings,clock.bpm,sr,seconds))}core.transport=preset.sync&&clock.source!=='FREE'?clock:null;
   for(let frame=0;frame<length;frame+=128){core.render(l,r,frame,controlBuffer?.getChannelData(0).subarray(frame,frame+128),controlBuffer?.getChannelData(1).subarray(frame,frame+128));for(let i=0;i<Math.min(128,length-frame);i++){out[0][frame+i]+=l[i]*preset.volume;out[1][frame+i]+=r[i]*preset.volume}if(frame%(128*2048)===0)await new Promise(resolve=>setTimeout(resolve,0))}
  }

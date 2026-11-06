@@ -10,8 +10,8 @@ const spec=(label,min,max,unit='',curve='linear')=>({name:label,min,max,unit,cur
 const macros=[
  {id:'gen.density',name:'Частота событий',help:'Плотность генеративных возбуждений',spec:spec('Частота событий',.25,20,'/с','log')},
  {id:'gen.variation',name:'Вариативность',help:'Степень отклонений от фразы',spec:spec('Вариативность',0,1)},
- {id:'gen.response',name:'Отклик',help:'Скорость реакции на аудио/MIDI',spec:spec('Отклик',.02,2,'с','log')},
- {id:'gen.depth',name:'Влияние',help:'Глубина управления генерацией',spec:spec('Влияние',0,1)},
+ {id:'gen.response',name:'Отклик',help:'Скорость реакции на другие синтезаторы',spec:spec('Отклик',.02,2,'с','log')},
+ {id:'gen.depth',name:'Влияние',help:'Глубина реакции на чужие события',spec:spec('Влияние',0,1)},
  {id:'filter.cutoff',name:'Срез фильтра',help:'Частота дополнительного фильтра',spec:spec('Срез фильтра',20,20000,'Hz','log')},
  {id:'filter.mix',name:'Смесь фильтра',help:'Баланс сухого/фильтрованного сигнала',spec:spec('Смесь фильтра',0,1)}
 ];
@@ -107,7 +107,7 @@ export function controlPagesForPreset(preset,os){
   pages:[
    {name:'ЗВУК',description:'Главные параметры этого типа пресета',controls:dsp.slice(0,6)},
    {name:'ДЕТАЛИ',description:'Дополнительные параметры движка и эффекты',controls:dsp.slice(6,12)},
-   {name:'ГЕНЕРАЦИЯ',description:'Аудио/MIDI-возбуждения и фильтр. * означает, что источник пока выключен',controls:macros.map(control=>({...control,type:control.id.startsWith('gen.')?'gen':'filter'}))}
+   {name:'ГЕНЕРАЦИЯ',description:'Связи пресетов и фильтр. * означает, что взаимодействие выключено',controls:macros.map(control=>({...control,type:control.id.startsWith('gen.')?'gen':'filter'}))}
   ]
  };
 }

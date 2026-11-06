@@ -1,0 +1,24 @@
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+import vm from 'node:vm';
+import {SynthCore} from '../src/dsp.js';
+let classRef=null;
+const events=[],context={sampleRate:24000,currentFrame:0,SynthCore,AudioWorkletProcessor:class{constructor(){this.port={postMessage:x=>events.push(x),onmessage:null}}},registerProcessor:(name,klass)=>{assert.equal(name,'dice-processor');classRef=klass},Math,Float32Array,Float64Array};
+vm.createContext(context);
+const source=readFileSync(new URL('../src/worklet.js',import.meta.url),'utf8').replace(/^import \{SynthCore\} from '\.\/dsp\.js';/m,'');
+vm.runInContext(source,context);
+assert(classRef);
+const w=new classRef({processorOptions:{os:20,seed:842}});
+w.port.onmessage({data:{type:'extensions',settings:{generative:{source:'PEER',send:.65,receive:.65,density:10,variation:.4,response:.18,depth:.6,character:'PULSE'},frequencyFilter:{type:'OFF',cutoff:12000,q:.7,mix:1}}}});
+w.port.onmessage({data:{type:'playing',value:true,at:0}});
+const out=[[new Float32Array(128),new Float32Array(128)]];
+for(let frame=0;frame<24000*2;frame+=128){context.currentFrame=frame;w.process([[]],out);assert(out[0][0].every(Number.isFinite));assert(out[0][0].every(x=>Math.abs(x)<=.83+1e-6))}
+const impulseEvents=events.filter(e=>e.type==='peerEvent');assert(impulseEvents.length>=2,'autonomous synth emitted its own attacks');
+const count=events.length;
+w.port.onmessage({data:{type:'peerExcite',event:{pad:1,velocity:.65,brightness:.8,pitch:.6}}});
+assert(w.core.generator.peerPending,'incoming event accepted');
+context.currentFrame=24000*2;w.process([[]],out);
+assert.equal(w.core.generator.peerPending,null,'incoming event processed');
+assert.equal(events.slice(count).some(e=>e.type==='peerEvent'),false,'received event not instantly rebroadcast');
+w.port.onmessage({data:{type:'playing',value:false}});assert.equal(w.playing,false);
+console.log('PASS worklet: endogenous attack emission, finite bounded audio, peer acceptance, no immediate echo');

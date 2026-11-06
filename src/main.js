@@ -23,6 +23,9 @@ function capturePreset(){if(presets[activePreset])Object.assign(presets[activePr
 function sessionData(){capturePreset();return {version:2,tempo,presets:presets.map(p=>p.state),activePreset}}
 function loadSession(s){const states=validateSession(s)?s.presets:[s];tempo=validateSession(s)?s.tempo:120;presets=states.map((p,i)=>({state:{...extensionDefaults(p),name:p.name||'Пресет '+(i+1),sync:p.sync===true,instanceId:typeof p.instanceId==='string'?p.instanceId:crypto.randomUUID(),midi:{...midiDefaults(p.os),...p.midi}},engine:null,running:false}));for(const instance of presets){
   const current=instance.state,stored=current.presetId;
+  // Migration of legacy AUDIO / MIDI / OFF project sources to the self-contained network.
+  if(!current.generative.peerModeVersion){current.generative.source='PEER';current.generative.peerModeVersion=1;}
+  current.midi.enabled=false;
   if(!Number.isInteger(stored))continue;
   if(synthPresets[stored]?.[0]===current.name)continue;
   const match=synthPresets.findIndex(p=>p[0]===current.name);
@@ -44,7 +47,7 @@ function stopAll(){release();capturePreset();presets.forEach(p=>{p.engine?.stop(
 function renderSession(){
  if(!presets.length)return;capturePreset();
  $('#presetTabs').replaceChildren(...presets.map((p,i)=>{const b=document.createElement('button');b.role='tab';b.id='preset-tab-'+i;b.setAttribute('aria-controls','presetPanel');b.setAttribute('aria-selected',String(i===activePreset));b.textContent=(i===activePreset?running:p.running)?'● '+p.state.name:p.state.name;b.onclick=()=>selectPreset(i);return b}));
- studio?.extensionControl.refresh();studio?.midiControl.refresh();if(state.instanceId!==lastPresetInstance){lastPresetInstance=state.instanceId;studio?.syncPresetSelector()}
+ studio?.extensionControl.refresh();if(state.instanceId!==lastPresetInstance){lastPresetInstance=state.instanceId;studio?.syncPresetSelector()}
  $('#presetPanel').setAttribute('aria-labelledby','preset-tab-'+activePreset);
  $('#presetName').value=state.name;$('#syncPreset').checked=state.sync;$('#tempo').value=Number(tempo.toFixed(1));$('#removePreset').disabled=presets.length===1;$('#addPreset').disabled=$('#clonePreset').disabled=presets.length>=12;
  $('#start').textContent=running?'■ СТОП ПРЕСЕТ':'▶ ПУСК ПРЕСЕТ';$('#led').classList.toggle('on',running);
@@ -58,11 +61,11 @@ $('#presetName').oninput=e=>{state.name=e.target.value;capturePreset();save()};
 $('#presetName').onchange=()=>{state.name=state.name.trim()||'Пресет';render();save()};
 $('#syncPreset').onchange=e=>{state.sync=e.target.checked;syncEngine(engine,state);save();render()};
 $('#tempo').onchange=e=>setTempo(Number(e.target.value));
-function addPreset(copy){if(busy||presets.length>=12)return;release();capturePreset();const s=copy?{...state,params:[...state.params],name:state.name.slice(0,32)+' · копия'}:{version:1,os:0,params:defaults(0),seed:freshSeed(),mode:'AS',volume:.4,fixed:false,name:'Пресет '+(presets.length+1),sync:false};Object.assign(s,extensionDefaults(structuredClone(s)));s.instanceId=crypto.randomUUID();s.midi=structuredClone(s.midi||midiDefaults(s.os));presets.push({state:s,engine:null,running:false});selectPreset(presets.length-1)}
+function addPreset(copy){if(busy||presets.length>=12)return;release();capturePreset();const s=copy?{...state,params:[...state.params],name:state.name.slice(0,32)+' · копия'}:{version:1,os:0,params:defaults(0),seed:freshSeed(),mode:'AS',volume:.4,fixed:false,name:'Пресет '+(presets.length+1),sync:false};Object.assign(s,extensionDefaults(structuredClone(s)));s.generative={...s.generative,source:copy?s.generative.source:'PEER',peerModeVersion:1};s.instanceId=crypto.randomUUID();s.midi=structuredClone(s.midi||midiDefaults(s.os));presets.push({state:s,engine:null,running:false});selectPreset(presets.length-1)}
 $('#addPreset').onclick=()=>addPreset(false);$('#clonePreset').onclick=()=>addPreset(true);
-$('#removePreset').onclick=async()=>{if(busy||presets.length===1)return;busy=true;try{release();studio?.midiControl.remove(state.instanceId);await engine?.dispose();presets.splice(activePreset,1);activePreset=Math.min(activePreset,presets.length-1);({state,engine,running}=presets[activePreset]);render();save()}finally{busy=false}};
+$('#removePreset').onclick=async()=>{if(busy||presets.length===1)return;busy=true;try{release();await engine?.dispose();presets.splice(activePreset,1);activePreset=Math.min(activePreset,presets.length-1);({state,engine,running}=presets[activePreset]);render();save()}finally{busy=false}};
 $('#stopAll').onclick=stopAll;
-$('#playAll').onclick=async()=>{if(busy)return;busy=true;capturePreset();try{for(const p of presets){if(!p.engine){p.engine=new Engine(p.state.os);await p.engine.init();p.engine.node.port.onmessage=({data})=>{if(data.type==='chaos')studio?.modulate(data.value)};p.engine.randomize(p.state.seed);p.engine.setMode(p.state.mode);p.state.params.forEach((v,i)=>p.engine.setParameter(i,v));p.engine.volume(p.state.volume);p.engine.setExtensions(p.state);p.engine.setMidiModulation({...p.state.midi,enabled:false})}}
+$('#playAll').onclick=async()=>{if(busy)return;busy=true;capturePreset();try{for(const p of presets){if(!p.engine){p.engine=new Engine(p.state.os);p.engine.peerId=p.state.instanceId;await p.engine.init();p.engine.onChaos=(value)=>studio?.modulate(value);p.engine.randomize(p.state.seed);p.engine.setMode(p.state.mode);p.state.params.forEach((v,i)=>p.engine.setParameter(i,v));p.engine.volume(p.state.volume);p.engine.setExtensions(p.state);p.engine.setMidiModulation({...p.state.midi,enabled:false})}}
  ({engine}=presets[activePreset]);if(!transport.state.running)transport.start();
  const startAt=transport.nextTime();for(const p of presets){syncEngine(p.engine,p.state);await p.engine.start(startAt);p.running=true}running=true;render();return startAt;
  }catch(e){message('Audio error: '+e.message)}finally{busy=false}};
@@ -78,7 +81,7 @@ function sendControl(control,value){
  else{engine?.setExtensions(state);studio?.extensionControl.refresh()}
  renderControls(true);save();
 }
-function apply(){engine.node.port.onmessage=({data})=>{if(data.type==='chaos')studio?.modulate(data.value)};engine.randomize(state.seed);engine.setMode(state.mode);state.params.forEach((v,i)=>engine.setParameter(i,v));engine.volume(state.volume);engine.setExtensions(state);engine.setMidiModulation({...state.midi,enabled:false});syncEngine(engine,state)}
+function apply(){engine.onChaos=(value)=>studio?.modulate(value);engine.randomize(state.seed);engine.setMode(state.mode);state.params.forEach((v,i)=>engine.setParameter(i,v));engine.volume(state.volume);engine.setExtensions(state);engine.setMidiModulation({...state.midi,enabled:false});syncEngine(engine,state)}
 function syncPad(i){const active=padPointers.get(i);const pad=$$('.pad')[i];pad.classList.toggle('active',active.size>0);engine?.touch(i,active.size?Math.max(...active.values()):0,active.size>0)}
 function release(){for(const pad of $$('.pad')){pad.classList.remove('active');padPointers.get(Number(pad.dataset.pad))?.clear()}for(let i=0;i<3;i++)engine?.touch(i,0,false)}
 function setMode(m){release();state.mode=m;engine?.setMode(m);render();save()}
@@ -175,9 +178,9 @@ function diceEnd(cancel=false){clearTimeout(diceTimer);$('#dice').classList.remo
 $('#dice').onpointerdown=e=>{e.preventDefault();$('#dice').setPointerCapture(e.pointerId);diceStart()};$('#dice').onpointerup=()=>diceEnd();$('#dice').onpointercancel=()=>diceEnd(true);$('#dice').onkeydown=e=>{if([' ','Enter'].includes(e.key)&&!e.repeat){e.preventDefault();diceStart()}};$('#dice').onkeyup=e=>{if([' ','Enter'].includes(e.key))diceEnd()};
 window.addEventListener('blur',()=>{release();keysDown.clear();diceEnd(true);render()});document.addEventListener('visibilitychange',()=>{if(document.hidden){release();keysDown.clear();diceEnd(true);render()}});
 $('#as').onclick=()=>setMode('AS');$('#ts').onclick=()=>setMode('TS');
-async function makeEngine(){const next=new Engine(state.os);try{await next.init();engine=next;apply();if(running)await engine.start();else await engine.stop()}catch(e){await next.dispose().catch(()=>{});engine=null;throw e}}
+async function makeEngine(){const next=new Engine(state.os);next.peerId=state.instanceId;try{await next.init();engine=next;apply();if(running)await engine.start();else await engine.stop()}catch(e){await next.dispose().catch(()=>{});engine=null;throw e}}
 $('#start').onclick=async()=>{if(busy)return;busy=true;try{if(!engine)await makeEngine();if(running){release();await engine.stop();running=false}else{if(state.sync&&!transport.state.running)transport.start();await engine.start();running=true}$('#start').textContent=running?'■ STOP AUDIO':'▶ START AUDIO';$('#led').classList.toggle('on',running);capturePreset();render();message(running?'Audio running · '+systems[state.os].name+' / '+state.mode:'Audio stopped.')}catch(e){message('Audio could not start: '+e.message)}finally{busy=false}};
-$('#os').onchange=async e=>{if(busy){e.target.value=state.os;return}busy=true;release();state.os=Number(e.target.value);state.midi=midiDefaults(state.os);studio?.midiControl.changed();delete state.presetId;state.params=defaults(state.os);pickup.clear();render();try{if(engine){await engine.dispose();engine=null;await makeEngine()}save();message('OS loaded · '+systems[state.os].name)}catch(err){running=false;$('#start').textContent='▶ START AUDIO';$('#led').classList.remove('on');message('OS error: '+err.message)}finally{busy=false}};
+$('#os').onchange=async e=>{if(busy){e.target.value=state.os;return}busy=true;release();state.os=Number(e.target.value);state.midi=midiDefaults(state.os);delete state.presetId;state.params=defaults(state.os);pickup.clear();render();try{if(engine){await engine.dispose();engine=null;await makeEngine()}save();message('OS loaded · '+systems[state.os].name)}catch(err){running=false;$('#start').textContent='▶ START AUDIO';$('#led').classList.remove('on');message('OS error: '+err.message)}finally{busy=false}};
 $('#volume').oninput=e=>{state.volume=Number(e.target.value);engine?.volume(state.volume);$('#volumeValue').textContent=Math.round(state.volume*100)+'%';save()};$('#fixed').onchange=e=>{state.fixed=e.target.checked;save()};$('#infoToggle').onclick=()=>{const panel=document.querySelector('.preset-meta-workspace');if(panel){panel.scrollIntoView({behavior:'smooth',block:'nearest'});const first=panel.querySelector('.preset-meta-tab[role=tab]');first?.focus();}};
 $('#seed').onclick=async()=>{try{await navigator.clipboard.writeText(String(state.seed));message('Seed copied: '+state.seed)}catch{message('Seed: '+state.seed)}};
 function download(blob,name){const u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(u),10000)}
@@ -195,8 +198,8 @@ async function replaceCurrentPreset(index){
   if(!validate(nextState)||!validateMidiConfig(nextState.midi))throw Error('Некорректные параметры пресета');
   if(oldEngine){
    // Prepare a new voice before disposing the old one. Failure leaves old audio untouched.
-   replacementEngine=new Engine(os);await replacementEngine.init();
-   replacementEngine.node.port.onmessage=({data})=>{if(data.type==='chaos')studio?.modulate(data.value)};
+   replacementEngine=new Engine(os);replacementEngine.peerId=nextState.instanceId;await replacementEngine.init();
+   replacementEngine.onChaos=(value)=>studio?.modulate(value);
    replacementEngine.randomize(nextState.seed);replacementEngine.setMode(nextState.mode);
    nextState.params.forEach((v,i)=>replacementEngine.setParameter(i,v));
    replacementEngine.volume(nextState.volume);replacementEngine.setExtensions(nextState);
@@ -207,7 +210,7 @@ async function replaceCurrentPreset(index){
   state=nextState;engine=replacementEngine;running=wasRunning;
   layerIndex=0;pickup.clear();
   await oldEngine?.dispose().catch(()=>{});
-  render();studio?.syncPresetSelector();studio?.midiControl.changed();save();
+  render();studio?.syncPresetSelector();save();
   message('Заменён пресет этой вкладки: '+name);
  }catch(error){
   // If replacement failed during preparation, the active tab retains its old state.
@@ -217,10 +220,10 @@ async function replaceCurrentPreset(index){
 }
 function stopRecording(){studio?.recorder.stop()}
 $('#record').onclick=()=>studio?.toggleRecord();
-function midiMessage(e){const [s,a,b]=e.data;if(s===248){const t=performance.now();if(clockLast&&t-clockLast<500){clockTimes.push(t-clockLast);if(clockTimes.length>24)clockTimes.shift();if(clockTimes.length===24){const bpm=60000/(clockTimes.reduce((a,b)=>a+b,0)/24*24);$('#midiStatus').textContent='CLOCK '+bpm.toFixed(1)+' BPM';setTempo(bpm)}}clockLast=t;return}if(s===250||s===251){transport.start(s===250);studio?.midi('start');capturePreset();presets.filter(p=>p.state.sync&&p.engine).forEach(p=>{p.engine.start().catch(e=>message(e.message));p.running=true;if(p===presets[activePreset])running=true});render();return}if(s===252){transport.stop();studio?.midi('stop');capturePreset();presets.filter(p=>p.state.sync).forEach(p=>{p.engine?.stop();p.running=false;if(p===presets[activePreset])running=false});release();render();return}studio?.midiControl.live(e.data)}
-function refreshMidi(){for(const [sel,ports] of [['#midiIn',midiAccess.inputs],['#midiOut',midiAccess.outputs]]){const el=$(sel),old=el.value;el.replaceChildren(new Option('None',''),...[...ports.values()].map(p=>new Option(p.name||p.id,p.id)));el.value=ports.has(old)?old:''}if(midiInput?.state==='disconnected'){midiInput.onmidimessage=null;midiInput=null;release();studio?.midiControl.releaseLive()}if(midiOutput?.state==='disconnected'){midiOutput=null;clearInterval(clockTimer);$('#clockSend').checked=false}}
+function midiMessage(e){const [s,a,b]=e.data;if(s===248){const t=performance.now();if(clockLast&&t-clockLast<500){clockTimes.push(t-clockLast);if(clockTimes.length>24)clockTimes.shift();if(clockTimes.length===24){const bpm=60000/(clockTimes.reduce((a,b)=>a+b,0)/24*24);$('#midiStatus').textContent='CLOCK '+bpm.toFixed(1)+' BPM';setTempo(bpm)}}clockLast=t;return}if(s===250||s===251){transport.start(s===250);studio?.midi('start');capturePreset();presets.filter(p=>p.state.sync&&p.engine).forEach(p=>{p.engine.start().catch(e=>message(e.message));p.running=true;if(p===presets[activePreset])running=true});render();return}if(s===252){transport.stop();studio?.midi('stop');capturePreset();presets.filter(p=>p.state.sync).forEach(p=>{p.engine?.stop();p.running=false;if(p===presets[activePreset])running=false});release();render();return}void e}
+function refreshMidi(){for(const [sel,ports] of [['#midiIn',midiAccess.inputs],['#midiOut',midiAccess.outputs]]){const el=$(sel),old=el.value;el.replaceChildren(new Option('None',''),...[...ports.values()].map(p=>new Option(p.name||p.id,p.id)));el.value=ports.has(old)?old:''}if(midiInput?.state==='disconnected'){midiInput.onmidimessage=null;midiInput=null;release();}if(midiOutput?.state==='disconnected'){midiOutput=null;clearInterval(clockTimer);$('#clockSend').checked=false}}
 $('#midi').onclick=async()=>{if(!navigator.requestMIDIAccess){$('#midiStatus').textContent='Web MIDI unsupported';return}try{midiAccess=await navigator.requestMIDIAccess({sysex:false});refreshMidi();midiAccess.onstatechange=refreshMidi;$('#midiStatus').textContent='MIDI ready';$('#midi').disabled=true}catch(e){$('#midiStatus').textContent='MIDI unavailable: '+e.message}};
-$('#midiIn').onchange=e=>{if(midiInput)midiInput.onmidimessage=null;release();studio?.midiControl.releaseLive();clockLast=0;clockTimes=[];midiInput=midiAccess?.inputs.get(e.target.value);if(midiInput)midiInput.onmidimessage=midiMessage;pickup.clear();for(let i=0;i<12;i++)pickup.set(i,null);render()};$('#midiOut').onchange=e=>{if(midiOutput&&$('#clockSend').checked)midiOutput.send([252]);midiOutput=midiAccess?.outputs.get(e.target.value);if(midiOutput&&$('#clockSend').checked)midiOutput.send([250])};$('#clockSend').onchange=e=>{clearInterval(clockTimer);if(e.target.checked){if(!midiOutput){e.target.checked=false;message('Select a MIDI output first.');return}midiOutput.send([250]);clockTimer=setInterval(()=>{try{midiOutput?.send([248])}catch{clearInterval(clockTimer)}},60000/tempo/24)}else midiOutput?.send([252])};
+$('#midiIn').onchange=e=>{if(midiInput)midiInput.onmidimessage=null;release();;clockLast=0;clockTimes=[];midiInput=midiAccess?.inputs.get(e.target.value);if(midiInput)midiInput.onmidimessage=midiMessage;pickup.clear();for(let i=0;i<12;i++)pickup.set(i,null);render()};$('#midiOut').onchange=e=>{if(midiOutput&&$('#clockSend').checked)midiOutput.send([252]);midiOutput=midiAccess?.outputs.get(e.target.value);if(midiOutput&&$('#clockSend').checked)midiOutput.send([250])};$('#clockSend').onchange=e=>{clearInterval(clockTimer);if(e.target.checked){if(!midiOutput){e.target.checked=false;message('Select a MIDI output first.');return}midiOutput.send([250]);clockTimer=setInterval(()=>{try{midiOutput?.send([248])}catch{clearInterval(clockTimer)}},60000/tempo/24)}else midiOutput?.send([252])};
 const keysDown=new Set();
 const padKeys=['KeyZ','KeyX','KeyC'];
 const decreaseKeys=['KeyQ','KeyW','KeyE','KeyR','KeyT','KeyY'];
@@ -254,7 +257,7 @@ const canvas=$('#scope'),ctx=canvas.getContext('2d'),samples=new Float32Array(20
 
 studio=setupStudio({
  replaceCurrentPreset,
- async factory(index){if(busy)throw Error('Дождитесь загрузки');const preset=synthPresets[index];if(!preset)throw Error('Выберите пресет');const [name,os,values,meta]=preset;if(presets.length>=12)throw Error('Максимум 12 вкладок');addPreset(false);state.name=name;state.os=os;state.seed=meta.seed??freshSeed();state.volume=meta.volume??.4;state.presetId=index;state.midi=structuredClone(meta.midi||midiDefaults(os));if(meta.excitation)state.generative={...state.generative,...meta.excitation};state.sync=false;state.params=defaults(os);for(const [key,value] of Object.entries(values))state.params[Number(key)]=value;render();save()},
+ async factory(index){if(busy)throw Error('Дождитесь загрузки');const preset=synthPresets[index];if(!preset)throw Error('Выберите пресет');const [name,os,values,meta]=preset;if(presets.length>=12)throw Error('Максимум 12 вкладок');addPreset(false);state.name=name;state.os=os;state.seed=meta.seed??freshSeed();state.volume=meta.volume??.4;state.presetId=index;state.midi=structuredClone(meta.midi||midiDefaults(os));if(meta.excitation)state.generative={...state.generative,...meta.excitation,source:'PEER',peerModeVersion:1};state.sync=false;state.params=defaults(os);for(const [key,value] of Object.entries(values))state.params[Number(key)]=value;render();save()},
  soloSample(value){muteSynths(value)},
  instances(){capturePreset();return presets},current:()=>state,onChange:save,
  getSession:sessionData,validateSession,validateLegacy:validate,

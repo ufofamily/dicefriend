@@ -19,7 +19,7 @@ export class BassDSP {
   reset(seed) {
     this.seed = seed >>> 0 || 1;
     for (let i = 0; i < 32; i++) this.pattern[i] = SCALE[Math.floor(this.random() * SCALE.length)];
-    this.step = -1; this.untilStep = 0; this.elapsed = 0;
+    this.step = -1; this.untilStep = 0; this.elapsed = 0; this.selfEvent=null;
     this.kickAge = this.bassAge = 100;
     this.kickPhase = this.bassPhase = this.modPhase = 0;
     this.kickAmp = this.bassAmp = 0;
@@ -54,10 +54,10 @@ export class BassDSP {
       const kickDensity = ritual ? p[7] : 1;
       if (kickEnabled && ((beatStart && this.random() < kickDensity) ||
           (this.os === 6 && !beatStart && this.random() < p[7] * .22))) {
-        this.trigger(0, autonomous ? .8 : pads[0]);
+        this.trigger(0, autonomous ? .8 : pads[0]);if(autonomous)this.selfEvent={pad:0,velocity:.8};
       }
       if (bassEnabled && !beatStart && (!ritual || this.random() < p[7])) {
-        this.trigger(1, autonomous ? .8 : pads[1]);
+        this.trigger(1, autonomous ? .8 : pads[1]);if(autonomous)this.selfEvent={pad:1,velocity:.7};
         this.note = this.pattern[this.step];
         if (this.os === 5 && this.random() < p[6]) this.note += this.random() < .5 ? 1 : 7;
       }
